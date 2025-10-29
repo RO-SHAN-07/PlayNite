@@ -106,7 +106,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {section.items.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <Link href={item.href} passHref legacyBehavior>
+                  <Link href={item.href} passHref>
                     <SidebarMenuButton
                       isActive={pathname === item.href}
                       tooltip={{ children: item.label }}
@@ -128,7 +128,7 @@ export function AppSidebar() {
           {isSignedIn ? (
             <SidebarMenu>
               <SidebarMenuItem>
-                <Link href="/account" passHref legacyBehavior>
+                <Link href="/account" passHref>
                   <SidebarMenuButton
                     isActive={pathname === '/account'}
                     tooltip={{ children: 'Account' }}
@@ -142,7 +142,7 @@ export function AppSidebar() {
                 </Link>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <Link href="/settings" passHref legacyBehavior>
+                <Link href="/settings" passHref>
                   <SidebarMenuButton
                     isActive={pathname === '/settings'}
                     tooltip={{ children: 'Settings' }}
@@ -153,7 +153,7 @@ export function AppSidebar() {
                 </Link>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <Link href="/auth/login" passHref legacyBehavior>
+                <Link href="/auth/login" passHref>
                   <SidebarMenuButton>
                     <LogOut />
                     <span>Log Out</span>
@@ -164,7 +164,7 @@ export function AppSidebar() {
           ) : (
             <SidebarMenu>
                <SidebarMenuItem>
-                <Link href="/auth/login" passHref legacyBehavior>
+                <Link href="/auth/login" passHref>
                   <SidebarMenuButton>
                     <LogIn />
                     <span>Log In</span>
