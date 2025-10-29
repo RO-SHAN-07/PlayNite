@@ -56,6 +56,10 @@ export interface Comment {
   timestamp: Timestamp;
 }
 
+export interface VideoLike {
+    type: 'like' | 'dislike';
+}
+
 export interface Notification {
   id: string;
   message: string;

@@ -540,6 +540,20 @@
         "timestamp"
       ]
     },
+    "VideoLike": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "VideoLike",
+        "type": "object",
+        "description": "Represents a like or dislike on a video by a user.",
+        "properties": {
+            "type": {
+            "type": "string",
+            "enum": ["like", "dislike"],
+            "description": "The type of reaction."
+            }
+        },
+        "required": ["type"]
+    },
     "Follower": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Follower",
@@ -806,6 +820,26 @@
             {
               "name": "commentId",
               "description": "The ID of the comment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/videos/{videoId}/likes/{userId}",
+        "definition": {
+          "entityName": "VideoLike",
+          "schema": {
+            "$ref": "#/backend/entities/VideoLike"
+          },
+          "description": "Stores likes/dislikes for a video. Publicly readable, writeable only by the owning user.",
+          "params": [
+            {
+              "name": "videoId",
+              "description": "The ID of the video."
+            },
+            {
+              "name": "userId",
+              "description": "The ID of the user who liked/disliked the video."
             }
           ]
         }

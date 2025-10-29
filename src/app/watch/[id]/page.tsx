@@ -3,15 +3,15 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
-import { type Video, UserProfile, Comment } from '@/lib/data';
+import { type Video, UserProfile, Comment, VideoLike } from '@/lib/data';
 import { formatDistanceToNow } from 'date-fns';
 import { Star, ThumbsUp, ThumbsDown, Share2, Loader2, Send } from 'lucide-react';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import { useFirestore, useUser, setDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { useDoc } from '@/firebase/firestore/use-doc';
+import { useDoc } from '@/firebase/firestore/use-doc.tsx';
 import { collection, doc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
 import { useMemo, useEffect, useRef, useState } from 'react';
-import { useCollection } from '@/firebase/firestore/use-collection';
+import { useCollection } from '@/firebase/firestore/use-collection.tsx';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { VideoPlayer } from '@/components/video-player';
@@ -145,20 +145,32 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   }, [firestore, video?.creatorId]);
   const { data: creator, isLoading: creatorLoading } = useDoc<UserProfile>(creatorRef);
   
-  const favoritesRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return collection(firestore, `users/${user.uid}/favorites`);
-  }, [firestore, user]);
-
   const favoriteQuery = useMemoFirebase(() => {
-    if (!favoritesRef) return null;
-    return query(favoritesRef, where('videoId', '==', videoId), limit(1));
-  }, [favoritesRef, videoId]);
+    if (!firestore || !user) return null;
+    return query(collection(firestore, `users/${user.uid}/favorites`), where('videoId', '==', videoId), limit(1));
+  }, [firestore, user, videoId]);
 
   const { data: favorite, isLoading: favoriteLoading } = useCollection(favoriteQuery);
   const isFavoritedInitially = useMemo(() => favorite && favorite.length > 0, [favorite]);
 
   const [isFavorited, setIsFavorited] = useState(isFavoritedInitially);
+
+  const likesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'videos', videoId, 'likes');
+    }, [firestore, videoId]);
+
+    const { data: likes, isLoading: likesLoading } = useCollection<VideoLike>(likesQuery);
+
+    const userLikeQuery = useMemoFirebase(() => {
+        if (!firestore || !user) return null;
+        return doc(firestore, 'videos', videoId, 'likes', user.uid);
+    }, [firestore, videoId, user]);
+    
+    const { data: userLike, isLoading: userLikeLoading } = useDoc<VideoLike>(userLikeQuery);
+
+    const likeCount = useMemo(() => likes?.filter(l => l.type === 'like').length || 0, [likes]);
+    const dislikeCount = useMemo(() => likes?.filter(l => l.type === 'dislike').length || 0, [likes]);
   
   useEffect(() => {
     setIsFavorited(isFavoritedInitially);
@@ -200,8 +212,6 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     }
 
     const favoriteRef = doc(firestore, `users/${user.uid}/favorites`, video.id);
-
-    // Optimistic UI update
     const previousState = isFavorited;
     setIsFavorited(!previousState);
 
@@ -217,11 +227,27 @@ export default function WatchPage({ params }: { params: { id: string } }) {
           toast({ title: 'Added to favorites!' });
       }
     } catch (error) {
-      // Revert on error
       setIsFavorited(previousState);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update favorites.' });
     }
   };
+
+  const handleLike = async (type: 'like' | 'dislike') => {
+    if (!user || !firestore || !video) {
+        toast({ variant: 'destructive', title: 'Please log in to react.' });
+        router.push('/auth/login');
+        return;
+    }
+    const likeRef = doc(firestore, `videos/${video.id}/likes/${user.uid}`);
+    if (userLike && userLike.type === type) {
+        // User is toggling off their existing reaction
+        deleteDocumentNonBlocking(likeRef);
+    } else {
+        // User is adding a new reaction or changing their reaction
+        setDocumentNonBlocking(likeRef, { type }, { merge: true });
+    }
+  }
+
 
   if (videoLoading) {
     return <div className="grid lg:grid-cols-3 gap-8">
@@ -288,11 +314,11 @@ export default function WatchPage({ params }: { params: { id: string } }) {
             </div>
 
             <div className="flex items-center gap-1 flex-wrap">
-              <Button variant="ghost">
+              <Button variant="ghost" onClick={() => handleLike('like')} className={userLike?.type === 'like' ? 'text-primary' : ''}>
                 <ThumbsUp className="mr-2" /> 
-                15K
+                {likeCount}
               </Button>
-              <Button variant="ghost">
+              <Button variant="ghost" onClick={() => handleLike('dislike')} className={userLike?.type === 'dislike' ? 'text-primary' : ''}>
                 <ThumbsDown />
               </Button>
                <Button variant="ghost">
