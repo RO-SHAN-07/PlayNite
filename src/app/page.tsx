@@ -1,3 +1,4 @@
+
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -45,14 +46,20 @@ export default function Home() {
 
   const [isAdding, setIsAdding] = useState(false);
 
-  const videosQuery = useMemoFirebase(() => {
+  const trendingVideosQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'videos'), orderBy('uploadedAt', 'desc'), limit(16));
+    return query(collection(firestore, 'videos'), orderBy('views', 'desc'), limit(10));
   }, [firestore]);
 
-  const { data: videos, loading } = useCollection<Video>(videosQuery);
+  const newReleasesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'videos'), orderBy('uploadedAt', 'desc'), limit(5));
+  }, [firestore]);
 
-  const featuredVideo = videos?.[0];
+  const { data: trendingVideos, loading: trendingLoading } = useCollection<Video>(trendingVideosQuery);
+  const { data: newReleases, loading: newReleasesLoading } = useCollection<Video>(newReleasesQuery);
+  
+  const featuredVideo = trendingVideos?.[0];
   const heroImage = {
     imageUrl: 'https://images.unsplash.com/photo-1754346724171-ddd61d8dd8da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxhYnN0cmFjdCUyMGNpbmVtYXRpY3xlbnwwfHx8fDE3NjE3MjYxODN8MA&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'abstract cinematic'
@@ -85,7 +92,7 @@ export default function Home() {
     <div className="space-y-12">
       {/* Hero Section */}
       <section className="relative h-[60vh] w-full overflow-hidden rounded-3xl">
-        {loading || !featuredVideo ? (
+        {trendingLoading || !featuredVideo ? (
           <Skeleton className="w-full h-full" />
         ) : (
           <>
@@ -163,11 +170,11 @@ export default function Home() {
       {/* Recommended For You */}
       <section>
         <h2 className="text-3xl font-bold font-headline mb-6">Trending Now</h2>
-         {loading ? (
+         {trendingLoading ? (
           <VideoRowSkeleton />
-        ) : videos && videos.length > 1 ? (
+        ) : trendingVideos && trendingVideos.length > 1 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {videos.slice(1, 6).map((video) => (
+            {trendingVideos.slice(1, 6).map((video) => (
               <VideoCard key={video.id} video={video} />
             ))}
           </div>
@@ -181,15 +188,15 @@ export default function Home() {
       {/* New Releases */}
       <section>
         <h2 className="text-3xl font-bold font-headline mb-6">New Releases</h2>
-        {loading ? (
+        {newReleasesLoading ? (
             <VideoRowSkeleton />
-        ) : videos && videos.length > 6 ? (
+        ) : newReleases && newReleases.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {videos.slice(6, 12).map((video) => (
+                {newReleases.map((video) => (
                     <VideoCard key={video.id} video={video} />
                 ))}
             </div>
-        ) : !loading && (
+        ) : (
              <div className="text-center text-muted-foreground col-span-full py-12">
                 <p>No new releases at the moment. Check back later!</p>
             </div>
