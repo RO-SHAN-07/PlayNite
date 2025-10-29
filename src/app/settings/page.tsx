@@ -24,7 +24,8 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { useUser, useAuth, useFirestore, updateDocumentNonBlocking, useMemoFirebase } from '@/firebase';
+import { useUser, useAuth, useFirestore, updateDocumentNonBlocking } from '@/firebase';
+import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';

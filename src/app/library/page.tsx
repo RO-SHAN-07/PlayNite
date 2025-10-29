@@ -2,11 +2,12 @@
 import { VideoCard } from '@/components/video-card';
 import { History, Star, Upload, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { collection, query, where, limit, orderBy } from 'firebase/firestore';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { Video, Favorite, VideoHistory } from '@/lib/data';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 
@@ -57,21 +58,21 @@ export default function LibraryPage() {
   const { data: history, isLoading: historyLoading } = useCollection<VideoHistory>(historyQuery);
   const { data: uploads, isLoading: uploadsLoading } = useCollection<Video>(uploadsQuery);
 
+  const favoriteVideoIds = useMemo(() => favorites?.map(f => f.videoId) || [], [favorites]);
+  const historyVideoIds = useMemo(() => history?.map(h => h.videoId).filter((v, i, a) => a.indexOf(v) === i) || [], [history]);
+
   const { data: favoriteVideos, isLoading: favoriteVideosLoading } = useCollection<Video>(
     useMemoFirebase(() => {
-      if (!firestore || !favorites || favorites.length === 0) return null;
-      const videoIds = favorites.map(f => f.videoId);
-      return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
-    }, [firestore, favorites])
+      if (!firestore || favoriteVideoIds.length === 0) return null;
+      return query(collection(firestore, 'videos'), where('__name__', 'in', favoriteVideoIds));
+    }, [firestore, favoriteVideoIds])
   );
 
   const { data: historyVideos, isLoading: historyVideosLoading } = useCollection<Video>(
     useMemoFirebase(() => {
-      if (!firestore || !history || history.length === 0) return null;
-      const videoIds = history.map(h => h.videoId).filter((v, i, a) => a.indexOf(v) === i);
-      if (videoIds.length === 0) return null;
-      return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
-    }, [firestore, history])
+      if (!firestore || historyVideoIds.length === 0) return null;
+      return query(collection(firestore, 'videos'), where('__name__', 'in', historyVideoIds));
+    }, [firestore, historyVideoIds])
   );
 
   if (isUserLoading || !user) {

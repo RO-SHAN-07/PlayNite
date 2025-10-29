@@ -14,7 +14,8 @@ import { VideoCard } from '@/components/video-card';
 import { PlayCircle, Plus } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, limit, query, orderBy } from 'firebase/firestore';
-import { useFirestore, useMemoFirebase } from '@/firebase';
+import { useFirestore } from '@/firebase';
+import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function VideoRowSkeleton({ count = 5 }: { count?: number }) {
@@ -92,7 +93,12 @@ export default function Home() {
 
       {/* Category Carousel */}
       <section>
-        <h2 className="text-3xl font-bold font-headline mb-6">Browse by Category</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold font-headline">Browse by Category</h2>
+          <Button variant="link" asChild>
+            <Link href="/categories">See all</Link>
+          </Button>
+        </div>
         <Carousel opts={{ align: 'start', loop: true }}>
           <CarouselContent>
             {categories.map((category) => (

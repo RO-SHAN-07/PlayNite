@@ -3,7 +3,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUser, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, updateDocumentNonBlocking } from '@/firebase';
+import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { Camera, Shield, Loader2, Edit3, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

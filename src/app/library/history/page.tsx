@@ -1,13 +1,16 @@
 'use client';
 import { VideoCard } from '@/components/video-card';
-import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, where, orderBy } from 'firebase/firestore';
-import { History, Loader2 } from 'lucide-react';
+import { History as HistoryIcon, Loader2, Film } from 'lucide-react'; // Renamed History to HistoryIcon
 import { useMemo, useEffect } from 'react';
 import type { Video, VideoHistory } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function HistoryPage() {
   const { user, isUserLoading } = useUser();
@@ -30,7 +33,8 @@ export default function HistoryPage() {
   const videoIds = useMemo(() => historyItems?.map(h => h.videoId).filter((v, i, a) => a.indexOf(v) === i) || [], [historyItems]);
 
   const videosQuery = useMemoFirebase(() => {
-    if (!firestore || videoIds.length === 0) return null;
+    // Prevent invalid query with empty 'in' array
+    if (!firestore || !videoIds || videoIds.length === 0) return null;
     return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
   }, [firestore, videoIds]);
 
@@ -42,23 +46,23 @@ export default function HistoryPage() {
   }, [historyVideos]);
 
   const orderedHistoryVideos = useMemo(() => {
-    if (!historyItems || !videoMap) return [];
+    if (!historyItems || !videoMap || videoMap.size === 0) return [];
     // Get unique video IDs from history, preserving order
     const uniqueVideoIds = historyItems.map(item => item.videoId).filter((v, i, a) => a.indexOf(v) === i);
     return uniqueVideoIds.map(id => videoMap.get(id)).filter(Boolean) as Video[];
   }, [historyItems, videoMap]);
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || (!user && !isUserLoading)) {
     return <div className="flex justify-center items-center h-96"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>;
   }
 
-  const isLoading = historyLoading || videosLoading;
+  const isLoading = historyLoading || (videoIds.length > 0 && videosLoading);
 
   return (
     <div className="space-y-8">
       <section>
         <h1 className="text-4xl font-bold font-headline flex items-center gap-3">
-          <History className="w-10 h-10 text-primary" />
+          <HistoryIcon className="w-10 h-10 text-primary" />
           Watch History
         </h1>
         <p className="text-lg text-muted-foreground mt-2">
@@ -83,8 +87,15 @@ export default function HistoryPage() {
               <VideoCard key={video.id} video={video} />
             ))
           ) : (
-             <div className="col-span-full text-center py-12">
-              <p className="text-muted-foreground">Your watch history is empty.</p>
+             <div className="col-span-full text-center py-16 bg-muted/20 rounded-lg">
+                <Film className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-semibold">No Watch History</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Start watching videos to build your history.
+                </p>
+                <Button asChild className="mt-4">
+                    <Link href="/">Watch Now</Link>
+                </Button>
             </div>
           )}
         </div>

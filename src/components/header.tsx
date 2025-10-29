@@ -21,7 +21,7 @@ import { signOut } from 'firebase/auth';
 
 export function Header() {
   const isMobile = useIsMobile();
-  const { user, loading } = useUser();
+  const { user, isUserLoading } = useUser();
   const auth = useAuth();
 
   const handleLogout = async () => {
@@ -45,11 +45,13 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon">
-          <Bell className="h-5 w-5" />
-          <span className="sr-only">Notifications</span>
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/notifications">
+            <Bell className="h-5 w-5" />
+            <span className="sr-only">Notifications</span>
+          </Link>
         </Button>
-        {loading ? (
+        {isUserLoading ? (
           <Skeleton className="h-8 w-8 rounded-full" />
         ) : user ? (
           <DropdownMenu>

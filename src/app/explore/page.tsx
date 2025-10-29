@@ -1,12 +1,14 @@
 'use client';
 import { TagCloud } from '@/components/tag-cloud';
 import { VideoCard } from '@/components/video-card';
-import { useFirestore, useMemoFirebase } from '@/firebase';
+import { useFirestore } from '@/firebase';
+import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { Video } from '@/lib/data';
 import { collection, query, limit } from 'firebase/firestore';
-import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function ExplorePage() {
     const firestore = useFirestore();
@@ -27,9 +29,14 @@ export default function ExplorePage() {
           Discover new videos, trending topics, and popular categories.
         </p>
       </section>
-
+      
       <section>
-        <h2 className="text-3xl font-bold font-headline mb-6">Trending Tags</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold font-headline">Browse Categories</h2>
+           <Button variant="link" asChild>
+                <Link href="/categories">See all</Link>
+            </Button>
+        </div>
         <TagCloud />
       </section>
 
@@ -51,7 +58,7 @@ export default function ExplorePage() {
                     <VideoCard key={video.id} video={video} />
                 ))
             ) : (
-                <p className="text-muted-foreground col-span-full">No videos found.</p>
+                <p className="text-muted-foreground col-span-full text-center py-12">No videos found.</p>
             )
           }
         </div>

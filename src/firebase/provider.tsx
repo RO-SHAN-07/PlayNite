@@ -74,7 +74,9 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
 
-    setUserAuthState({ user: null, isUserLoading: true, userError: null }); // Reset on auth instance change
+    // This makes sure we show a loader on initial load, even if the user is already cached.
+    const initialUser = auth.currentUser;
+    setUserAuthState({ user: initialUser, isUserLoading: !initialUser, userError: null });
 
     const unsubscribe = onAuthStateChanged(
       auth,
@@ -153,17 +155,6 @@ export const useFirebaseApp = (): FirebaseApp => {
   const { firebaseApp } = useFirebase();
   return firebaseApp;
 };
-
-type MemoFirebase <T> = T & {__memo?: boolean};
-
-export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | (MemoFirebase<T>) {
-  const memoized = useMemo(factory, deps);
-  
-  if(typeof memoized !== 'object' || memoized === null) return memoized;
-  (memoized as MemoFirebase<T>).__memo = true;
-  
-  return memoized;
-}
 
 /**
  * Hook specifically for accessing the authenticated user's state.

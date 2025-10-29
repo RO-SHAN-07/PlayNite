@@ -504,6 +504,114 @@
         "action",
         "moderationDate"
       ]
+    },
+    "Notification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a notification for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the notification."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who should receive the notification."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of notification (e.g., 'new_video', 'comment', 'mention')."
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the notification message."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Date and time the notification was created.",
+          "format": "date-time"
+        },
+        "isRead": {
+          "type": "boolean",
+          "description": "Whether the user has read the notification."
+        },
+        "link": {
+          "type": "string",
+          "description": "A URL to navigate to when the notification is clicked.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "type",
+        "message",
+        "timestamp",
+        "isRead"
+      ]
+    },
+    "Comment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Comment",
+      "type": "object",
+      "description": "Represents a comment on a video.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the comment."
+        },
+        "videoId": {
+          "type": "string",
+          "description": "The ID of the video the comment belongs to."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who posted the comment."
+        },
+        "text": {
+          "type": "string",
+          "description": "The content of the comment."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Date and time the comment was posted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "videoId",
+        "userId",
+        "text",
+        "timestamp"
+      ]
+    },
+    "Follower": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Follower",
+      "type": "object",
+      "description": "Represents a follower relationship between two users.",
+      "properties": {
+        "followerId": {
+          "type": "string",
+          "description": "The ID of the user who is following."
+        },
+        "followedId": {
+          "type": "string",
+          "description": "The ID of the user being followed (the creator)."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Date and time the follow action occurred.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "followerId",
+        "followedId",
+        "timestamp"
+      ]
     }
   },
   "auth": {
@@ -635,6 +743,26 @@
         }
       },
       {
+        "path": "/users/{creatorId}/followers/{followerId}",
+        "definition": {
+          "entityName": "Follower",
+          "schema": {
+            "$ref": "#/backend/entities/Follower"
+          },
+          "description": "Stores the followers of a creator. Writeable by any authenticated user, readable by all.",
+          "params": [
+            {
+              "name": "creatorId",
+              "description": "The user ID of the creator being followed."
+            },
+            {
+              "name": "followerId",
+              "description": "The user ID of the user who is following."
+            }
+          ]
+        }
+      },
+      {
         "path": "/videos/{videoId}",
         "definition": {
           "entityName": "Video",
@@ -646,6 +774,26 @@
             {
               "name": "videoId",
               "description": "The unique identifier of the video."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/videos/{videoId}/comments/{commentId}",
+        "definition": {
+          "entityName": "Comment",
+          "schema": {
+            "$ref": "#/backend/entities/Comment"
+          },
+          "description": "Stores comments for a video. Publicly readable, writeable by authenticated users.",
+          "params": [
+            {
+              "name": "videoId",
+              "description": "The ID of the video."
+            },
+            {
+              "name": "commentId",
+              "description": "The ID of the comment."
             }
           ]
         }
@@ -758,6 +906,22 @@
             {
               "name": "moderationLogId",
               "description": "The unique identifier of the moderation log entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": {
+            "$ref": "#/backend/entities/Notification"
+          },
+          "description": "Stores notifications for users. Readable only by the recipient user.",
+          "params": [
+            {
+              "name": "notificationId",
+              "description": "The unique identifier for the notification."
             }
           ]
         }

@@ -3,18 +3,127 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
-import { type Video } from '@/lib/data';
+import { type Video, UserProfile, Comment } from '@/lib/data';
 import { formatDistanceToNow } from 'date-fns';
-import { Star, ThumbsUp, ThumbsDown, Share2, Loader2 } from 'lucide-react';
+import { Star, ThumbsUp, ThumbsDown, Share2, Loader2, Send } from 'lucide-react';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
-import { useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useUser, setDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { collection, doc, serverTimestamp, query, where, limit } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { VideoPlayer } from '@/components/video-player';
+import { useMemoFirebase } from '@/hooks/use-memo-firebase';
+import { Textarea } from '@/components/ui/textarea';
+import Link from 'next/link';
+
+function CommentItem({ comment }: { comment: Comment }) {
+    const firestore = useFirestore();
+    const userRef = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return doc(firestore, 'users', comment.userId);
+    }, [firestore, comment.userId]);
+    const { data: user, isLoading } = useDoc<UserProfile>(userRef);
+
+    if (isLoading) return <Skeleton className="h-16 w-full" />
+
+    return (
+        <div className="flex gap-3">
+            <Avatar className="w-10 h-10">
+                <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'user'} />
+                <AvatarFallback>{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
+            </Avatar>
+            <div>
+                <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm">{user?.displayName || 'Anonymous'}</span>
+                    <span className="text-xs text-muted-foreground">
+                        {comment.timestamp ? formatDistanceToNow(comment.timestamp.toDate(), { addSuffix: true }) : 'just now'}
+                    </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">{comment.text}</p>
+            </div>
+        </div>
+    )
+}
+
+function CommentsSection({ videoId }: { videoId: string }) {
+    const firestore = useFirestore();
+    const { user } = useUser();
+    const [commentText, setCommentText] = useState('');
+    const [isPosting, setIsPosting] = useState(false);
+
+    const commentsQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, `videos/${videoId}/comments`), orderBy('timestamp', 'desc'));
+    }, [firestore, videoId]);
+
+    const { data: comments, isLoading } = useCollection<Comment>(commentsQuery);
+
+    const handlePostComment = async () => {
+        if (!user || !firestore) {
+            toast({ variant: 'destructive', title: 'Please log in to comment.' });
+            return;
+        }
+        if (!commentText.trim()) return;
+
+        setIsPosting(true);
+        try {
+            const commentsCollection = collection(firestore, `videos/${videoId}/comments`);
+            await addDocumentNonBlocking(commentsCollection, {
+                videoId,
+                userId: user.uid,
+                text: commentText,
+                timestamp: serverTimestamp(),
+            });
+            setCommentText('');
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error posting comment.' });
+        } finally {
+            setIsPosting(false);
+        }
+    }
+
+    return (
+        <div className="bg-muted/30 rounded-xl p-4 md:p-6">
+            <h2 className="text-xl font-bold mb-4">{comments?.length || 0} Comments</h2>
+            {user && (
+                <div className="flex gap-3 mb-6">
+                    <Avatar className="w-10 h-10">
+                        <AvatarImage src={user.photoURL || ''} />
+                        <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 relative">
+                        <Textarea 
+                            placeholder="Add a comment..." 
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            className="bg-background pr-12"
+                        />
+                        <Button 
+                            size="icon" 
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                            onClick={handlePostComment}
+                            disabled={isPosting}
+                        >
+                            {isPosting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4"/>}
+                        </Button>
+                    </div>
+                </div>
+            )}
+            <div className="space-y-6">
+                {isLoading ? (
+                    Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
+                ) : comments && comments.length > 0 ? (
+                    comments.map(comment => <CommentItem key={comment.id} comment={comment} />)
+                ) : (
+                    <p className="text-muted-foreground text-sm text-center py-4">Be the first to comment!</p>
+                )}
+            </div>
+        </div>
+    );
+}
 
 export default function WatchPage({ params }: { params: { id: string } }) {
   const { id: videoId } = params;
@@ -34,12 +143,13 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     if (!firestore || !video?.creatorId) return null;
     return doc(firestore, 'users', video.creatorId);
   }, [firestore, video?.creatorId]);
-  const { data: creator, isLoading: creatorLoading } = useDoc(creatorRef);
+  const { data: creator, isLoading: creatorLoading } = useDoc<UserProfile>(creatorRef);
   
   const favoritesRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return collection(firestore, `users/${user.uid}/favorites`);
   }, [firestore, user]);
+
   const favoriteQuery = useMemoFirebase(() => {
     if (!favoritesRef) return null;
     return query(favoritesRef, where('videoId', '==', videoId), limit(1));
@@ -153,12 +263,14 @@ export default function WatchPage({ params }: { params: { id: string } }) {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-             {creatorLoading ? <Skeleton className="h-12 w-12 rounded-full" /> : (
-              <Avatar>
-                {creator?.photoURL && <AvatarImage src={creator.photoURL} alt={creator.displayName}/>}
-                <AvatarFallback>{creator?.displayName?.charAt(0)}</AvatarFallback>
-              </Avatar>
-             )}
+              <Link href={`/creator/${video.creatorId}`}>
+                 {creatorLoading ? <Skeleton className="h-12 w-12 rounded-full" /> : (
+                  <Avatar>
+                    {creator?.photoURL && <AvatarImage src={creator.photoURL} alt={creator.displayName || ''}/>}
+                    <AvatarFallback>{creator?.displayName?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                 )}
+              </Link>
               <div>
                 {creatorLoading ? (
                     <div className="space-y-1">
@@ -167,7 +279,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
                     </div>
                 ) : (
                     <>
-                     <p className="font-semibold">{creator?.displayName}</p>
+                     <Link href={`/creator/${video.creatorId}`} className="font-semibold hover:underline">{creator?.displayName}</Link>
                      <p className="text-sm text-muted-foreground">1.2M Subscribers</p>
                     </>
                 )}
@@ -194,10 +306,12 @@ export default function WatchPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        <div className="bg-muted/50 rounded-xl p-4">
+        <div className="bg-muted/30 rounded-xl p-4">
           <h2 className="font-semibold mb-2">Description</h2>
           <p className="text-muted-foreground whitespace-pre-wrap">{video.description}</p>
         </div>
+        
+        <CommentsSection videoId={videoId} />
 
       </div>
       <div className="lg:col-span-1 space-y-6">

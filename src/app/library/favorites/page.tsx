@@ -1,13 +1,16 @@
 'use client';
 import { VideoCard } from '@/components/video-card';
-import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, where } from 'firebase/firestore';
-import { Star, Loader2 } from 'lucide-react';
+import { Star, Loader2, HeartCrack } from 'lucide-react';
 import { useMemo, useEffect } from 'react';
 import type { Video, Favorite } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function FavoritesPage() {
   const { user, isUserLoading } = useUser();
@@ -30,17 +33,22 @@ export default function FavoritesPage() {
   const videoIds = useMemo(() => favorites?.map(f => f.videoId) || [], [favorites]);
 
   const videosQuery = useMemoFirebase(() => {
-    if (!firestore || videoIds.length === 0) return null;
+    // Prevent invalid query with empty 'in' array
+    if (!firestore || !videoIds || videoIds.length === 0) return null;
     return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
   }, [firestore, videoIds]);
 
   const { data: favoritedVideos, isLoading: videosLoading } = useCollection<Video>(videosQuery);
 
-  if (isUserLoading || !user) {
-    return <div className="flex justify-center items-center h-96"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>;
+  if (isUserLoading || (!user && !isUserLoading)) {
+    return (
+        <div className="flex justify-center items-center h-96">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+        </div>
+    );
   }
 
-  const isLoading = favoritesLoading || videosLoading;
+  const isLoading = favoritesLoading || (videoIds.length > 0 && videosLoading);
 
   return (
     <div className="space-y-8">
@@ -71,8 +79,15 @@ export default function FavoritesPage() {
               <VideoCard key={video.id} video={video} />
             ))
           ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-muted-foreground">You have no favorited videos yet.</p>
+            <div className="col-span-full text-center py-16 bg-muted/20 rounded-lg">
+                <HeartCrack className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-semibold">No Favorited Videos</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Click the star icon on a video to save it here.
+                </p>
+                <Button asChild className="mt-4">
+                    <Link href="/explore">Explore Videos</Link>
+                </Button>
             </div>
           )}
         </div>
