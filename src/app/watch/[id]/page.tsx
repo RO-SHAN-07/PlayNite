@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,8 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { VideoPlayer } from '@/components/video-player';
 
-export default function WatchPage({ params }: { params: { id: string } }) {
-  const { id: videoId } = params;
+export default function WatchPage({ params: { id: videoId } }: { params: { id: string } }) {
   const firestore = useFirestore();
   const { user } = useUser();
   const router = useRouter();
