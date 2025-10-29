@@ -10,6 +10,7 @@ import {
   History,
   LogOut,
   LogIn,
+  Video,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -61,6 +62,16 @@ const SIDEBAR_SECTIONS = [
         href: '/library/favorites',
         label: 'Favorites',
         icon: Star,
+      },
+    ],
+  },
+   {
+    label: 'Creator',
+    items: [
+      {
+        href: '/studio',
+        label: 'Creator Studio',
+        icon: Video,
       },
     ],
   },
@@ -137,7 +148,7 @@ export function AppSidebar() {
                   <Link href="/account">
                     <Avatar className="h-6 w-6">
                       {avatarImage && <AvatarImage src={avatarImage.imageUrl} data-ai-hint={avatarImage.imageHint} />}
-                      <AvatarFallback>PN</AvatarFallback>
+                      <AvatarFallback>JD</AvatarFallback>
                     </Avatar>
                     <span>Jane Doe</span>
                   </Link>

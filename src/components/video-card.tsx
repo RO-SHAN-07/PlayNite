@@ -26,7 +26,7 @@ export function VideoCard({ video }: VideoCardProps) {
     <Link href={`/watch/${video.id}`}>
       <Card className="overflow-hidden border-none bg-transparent shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20">
         <CardContent className="p-0">
-          <div className="group relative aspect-video overflow-hidden">
+          <div className="group relative aspect-video overflow-hidden rounded-lg">
             {thumbnail && (
               <Image
                 src={thumbnail.imageUrl}
@@ -44,7 +44,7 @@ export function VideoCard({ video }: VideoCardProps) {
               {video.duration}
             </div>
           </div>
-          <div className="flex items-start gap-4 p-4">
+          <div className="flex items-start gap-4 p-2">
             <Avatar className="h-10 w-10">
               {avatar && <AvatarImage src={avatar.imageUrl} alt={video.creator} data-ai-hint={avatar.imageHint} />}
               <AvatarFallback>{video.creator.charAt(0)}</AvatarFallback>

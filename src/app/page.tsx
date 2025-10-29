@@ -35,9 +35,11 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4">{featuredVideo.title}</h1>
           <p className="max-w-xl text-lg text-foreground/80 mb-6">{featuredVideo.description}</p>
           <div className="flex gap-4">
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
-              <PlayCircle className="mr-2" />
-              Play Now
+            <Button size="lg" className="bg-primary hover:bg-primary/90" asChild>
+              <Link href={`/watch/${featuredVideo.id}`}>
+                <PlayCircle className="mr-2" />
+                Play Now
+              </Link>
             </Button>
             <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm text-white border-white/20 hover:bg-white/20">
               <Plus className="mr-2" />
@@ -54,7 +56,7 @@ export default function Home() {
           <CarouselContent>
             {categories.map((category) => (
               <CarouselItem key={category.id} className="md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
-                <Link href={`/categories/${category.id}`}>
+                <Link href={`/explore?category=${category.id}`}>
                   <div className="group relative aspect-video overflow-hidden rounded-xl">
                     <Image
                       src={category.imageUrl}
