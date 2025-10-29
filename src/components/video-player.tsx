@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import {
   Play,
   Pause,
@@ -27,9 +27,10 @@ import {
 type VideoPlayerProps = {
   src: string;
   poster?: string;
+  startTime?: number;
 };
 
-export function VideoPlayer({ src, poster }: VideoPlayerProps) {
+export const VideoPlayer = forwardRef(({ src, poster, startTime }: VideoPlayerProps, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -44,6 +45,14 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const [playbackRate, setPlaybackRate] = useState(1);
 
   let controlsTimeout: NodeJS.Timeout;
+
+  // Expose the video's current time via a ref for parent components
+  useImperativeHandle(ref, () => ({
+    getCurrentTime: () => {
+      return videoRef.current?.currentTime || 0;
+    },
+  }));
+
 
   const handleMouseMove = () => {
     setShowControls(true);
@@ -72,7 +81,12 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
         }
     };
     const onDurationChange = () => setDuration(video.duration);
-    const onCanPlay = () => setIsLoading(false);
+    const onCanPlay = () => {
+        setIsLoading(false);
+        if (startTime) {
+            video.currentTime = startTime;
+        }
+    };
     const onWaiting = () => setIsLoading(true);
 
     const onFullscreenChange = () => {
@@ -80,7 +94,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        if((e.target as HTMLElement)?.tagName?.toLowerCase() === 'input') return;
+        if((e.target as HTMLElement)?.tagName?.toLowerCase() === 'input' || (e.target as HTMLElement)?.tagName?.toLowerCase() === 'textarea') return;
         switch(e.key.toLowerCase()){
             case ' ':
                 e.preventDefault();
@@ -125,7 +139,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isPlaying]);
+  }, [isPlaying, startTime]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -270,7 +284,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
                   <Settings />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-40 bg-black/80 border-white/20 text-white p-2">
+              <PopoverContent className="w-40 bg-black/80 border-white/20 text-white p-2 mb-2">
                 <div className="text-sm font-bold mb-2 px-2">Playback Speed</div>
                  {playbackRates.map(rate => (
                     <button 
@@ -300,4 +314,6 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
       </div>
     </div>
   );
-}
+});
+
+VideoPlayer.displayName = 'VideoPlayer';

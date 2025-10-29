@@ -10,6 +10,7 @@ import {
   LogOut,
   LogIn,
   Video,
+  Banknote,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -63,6 +64,11 @@ const SIDEBAR_SECTIONS = [
         label: 'Favorites',
         icon: Star,
       },
+      {
+        href: '/library/memory-bank',
+        label: 'Memory Bank',
+        icon: Banknote,
+      },
     ],
   },
    {
@@ -79,7 +85,7 @@ const SIDEBAR_SECTIONS = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { user, loading } = useUser();
+  const { user, isUserLoading } = useUser();
   const auth = useAuth();
 
   const handleLogout = async () => {
@@ -87,6 +93,58 @@ export function AppSidebar() {
       await signOut(auth);
     }
   };
+
+  if (isUserLoading) {
+    return (
+       <Sidebar
+        className="border-r border-white/10 bg-black/30 backdrop-blur-xl"
+        collapsible="icon"
+      >
+        <SidebarHeader>
+           <div className="flex items-center gap-2">
+              <div className="bg-primary p-2 rounded-lg">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-primary-foreground"
+                >
+                  <path d="M7 4v16l13-8L7 4z"></path>
+                </svg>
+              </div>
+              <span className="font-bold font-headline text-xl">PlayNite</span>
+            </div>
+        </SidebarHeader>
+         <SidebarContent>
+           <div className="p-2 space-y-4">
+              <div className="space-y-2">
+                <div className="h-6 w-1/2 bg-muted/20 animate-pulse rounded-md" />
+                <div className="h-8 w-full bg-muted/20 animate-pulse rounded-md" />
+                <div className="h-8 w-full bg-muted/20 animate-pulse rounded-md" />
+                <div className="h-8 w-full bg-muted/20 animate-pulse rounded-md" />
+              </div>
+               <div className="space-y-2">
+                <div className="h-6 w-1/2 bg-muted/20 animate-pulse rounded-md" />
+                <div className="h-8 w-full bg-muted/20 animate-pulse rounded-md" />
+                <div className="h-8 w-full bg-muted/20 animate-pulse rounded-md" />
+              </div>
+           </div>
+        </SidebarContent>
+         <SidebarFooter>
+            <SidebarSeparator />
+            <div className="p-2">
+                <div className="h-8 w-full bg-muted/20 animate-pulse rounded-md" />
+            </div>
+        </SidebarFooter>
+      </Sidebar>
+    )
+  }
 
   return (
     <Sidebar
@@ -117,6 +175,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         {SIDEBAR_SECTIONS.map((section) => (
+         (!user && (section.label === 'My Library' || section.label === 'Creator')) ? null : (
           <SidebarGroup key={section.label}>
             <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
             <SidebarMenu>
@@ -136,17 +195,14 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </SidebarGroup>
+         )
         ))}
       </SidebarContent>
 
       <SidebarFooter>
         <SidebarSeparator />
         <SidebarGroup>
-          {loading ? (
-            <div className="p-2">
-                <div className="h-8 w-full bg-muted/20 animate-pulse rounded-md" />
-            </div>
-          ) : user ? (
+          {user ? (
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
