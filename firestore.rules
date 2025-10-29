@@ -1,0 +1,310 @@
+/**
+ * @file Firebase Security Rules for PlayNite Firestore.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user-generated content and restricts administrative data.
+ * Public data collections (videos, categories, tags, creators) are readable by all, but writable only by authorized users.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores personal user data, accessible only to the user.
+ * - /users/{userId}/watch_later/{watchLaterId}:  User's watch later list, accessible only to the user.
+ * - /users/{userId}/favorites/{favoriteId}:  User's favorites list, accessible only to the user.
+ * - /users/{userId}/video_history/{videoHistoryId}:  User's video history, accessible only to the user.
+ * - /users/{userId}/playlists/{playlistId}:  User's playlists, accessible only to the user.
+ * - /users/{userId}/playlists/{playlistId}/playlist_items/{playlistItemId}: Items in a user's playlist, accessible only to the user.
+ * - /videos/{videoId}: Publicly readable video metadata, writable by authorized users (TODO: Define authorization for video creation/updates).
+ * - /categories/{categoryId}: Publicly readable video categories, writable by authorized users (TODO: Define authorization for category creation/updates).
+ * - /tags/{tagId}: Publicly readable video tags, writable by authorized users (TODO: Define authorization for tag creation/updates).
+ * - /creators/{creatorId}: Publicly readable creator information, writable by authorized users (TODO: Define authorization for creator creation/updates).
+ * - /video_ratings/{videoRatingId}: Publicly readable video ratings, writable by authorized users (TODO: Define authorization for video rating creation/updates).
+ * - /reported_videos/{reportedVideoId}: Stores reports of inappropriate videos. Restricted access.
+ * - /content_policies/{contentPolicyId}: Stores content policies, access restricted to admins (TODO: Implement admin check).
+ * - /moderation_logs/{moderationLogId}: Stores moderation logs, access restricted to admins (TODO: Implement admin check).
+ *
+ * Key Security Decisions:
+ * - User data is strictly private and accessible only to the authenticated user.
+ * - Public data collections are readable by everyone but require authorization for write operations.
+ * - List operations are allowed only where appropriate based on data privacy.
+ * - Administrative collections are protected behind TODO rules.
+ *
+ * Denormalization for Authorization:
+ *  - The rules rely on path-based authorization for user-owned data, avoiding the need for `get()` calls.
+ *
+ * Structural Segregation:
+ *  - Publicly readable data (videos, categories, tags, creators) is stored in separate top-level collections from user-private data.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Enforces user-ownership for user profiles.
+     * @path /users/{userId}
+     * @allow (create) - User with ID 'user123' creates their profile: request.auth.uid == 'user123'.
+     * @allow (get) - User with ID 'user123' reads their profile: request.auth.uid == 'user123'.
+     * @allow (update) - User with ID 'user123' updates their profile: request.auth.uid == 'user123'.
+     * @allow (delete) - User with ID 'user123' deletes their profile: request.auth.uid == 'user123'.
+     * @deny (create) - User with ID 'user123' tries to create a profile for 'otherUser': request.auth.uid == 'user123'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces user-ownership for watch later entries.
+     * @path /users/{userId}/watch_later/{watchLaterId}
+     * @allow (create) - User with ID 'user123' creates a watch later entry: request.auth.uid == 'user123'.
+     * @allow (get) - User with ID 'user123' reads a watch later entry: request.auth.uid == 'user123'.
+     * @allow (update) - User with ID 'user123' updates a watch later entry: request.auth.uid == 'user123'.
+     * @allow (delete) - User with ID 'user123' deletes a watch later entry: request.auth.uid == 'user123'.
+     * @deny (create) - User with ID 'user123' tries to create a watch later entry for 'otherUser': request.auth.uid == 'user123'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/watch_later/{watchLaterId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces user-ownership for favorite videos.
+     * @path /users/{userId}/favorites/{favoriteId}
+     * @allow (create) - User with ID 'user123' creates a favorite entry: request.auth.uid == 'user123'.
+     * @allow (get) - User with ID 'user123' reads a favorite entry: request.auth.uid == 'user123'.
+     * @allow (update) - User with ID 'user123' updates a favorite entry: request.auth.uid == 'user123'.
+     * @allow (delete) - User with ID 'user123' deletes a favorite entry: request.auth.uid == 'user123'.
+     * @deny (create) - User with ID 'user123' tries to create a favorite entry for 'otherUser': request.auth.uid == 'user123'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/favorites/{favoriteId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces user-ownership for video history entries.
+     * @path /users/{userId}/video_history/{videoHistoryId}
+     * @allow (create) - User with ID 'user123' creates a video history entry: request.auth.uid == 'user123'.
+     * @allow (get) - User with ID 'user123' reads a video history entry: request.auth.uid == 'user123'.
+     * @allow (update) - User with ID 'user123' updates a video history entry: request.auth.uid == 'user123'.
+     * @allow (delete) - User with ID 'user123' deletes a video history entry: request.auth.uid == 'user123'.
+     * @deny (create) - User with ID 'user123' tries to create a video history entry for 'otherUser': request.auth.uid == 'user123'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/video_history/{videoHistoryId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces user-ownership for playlists.
+     * @path /users/{userId}/playlists/{playlistId}
+     * @allow (create) - User with ID 'user123' creates a playlist: request.auth.uid == 'user123'.
+     * @allow (get) - User with ID 'user123' reads a playlist: request.auth.uid == 'user123'.
+     * @allow (update) - User with ID 'user123' updates a playlist: request.auth.uid == 'user123'.
+     * @allow (delete) - User with ID 'user123' deletes a playlist: request.auth.uid == 'user123'.
+     * @deny (create) - User with ID 'user123' tries to create a playlist for 'otherUser': request.auth.uid == 'user123'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/playlists/{playlistId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces user-ownership for playlist items.
+     * @path /users/{userId}/playlists/{playlistId}/playlist_items/{playlistItemId}
+     * @allow (create) - User with ID 'user123' creates a playlist item: request.auth.uid == 'user123'.
+     * @allow (get) - User with ID 'user123' reads a playlist item: request.auth.uid == 'user123'.
+     * @allow (update) - User with ID 'user123' updates a playlist item: request.auth.uid == 'user123'.
+     * @allow (delete) - User with ID 'user123' deletes a playlist item: request.auth.uid == 'user123'.
+     * @deny (create) - User with ID 'user123' tries to create a playlist item for 'otherUser': request.auth.uid == 'user123'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/playlists/{playlistId}/playlist_items/{playlistItemId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Allows public read access to videos, but restricts write access.
+     * @path /videos/{videoId}
+     * @allow (get) - Any user can read video metadata.
+     * @allow (list) - Any user can list videos.
+     * @deny (create) - No one can create a video without authorization (TODO).
+     * @deny (update) - No one can update a video without authorization (TODO).
+     * @deny (delete) - No one can delete a video without authorization (TODO).
+     * @principle Public read access with restricted writes.
+     */
+    match /videos/{videoId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    /**
+     * @description Allows public read access to categories, but restricts write access.
+     * @path /categories/{categoryId}
+     * @allow (get) - Any user can read category metadata.
+     * @allow (list) - Any user can list categories.
+     * @deny (create) - No one can create a category without authorization (TODO).
+     * @deny (update) - No one can update a category without authorization (TODO).
+     * @deny (delete) - No one can delete a category without authorization (TODO).
+     * @principle Public read access with restricted writes.
+     */
+    match /categories/{categoryId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    /**
+     * @description Allows public read access to tags, but restricts write access.
+     * @path /tags/{tagId}
+     * @allow (get) - Any user can read tag metadata.
+     * @allow (list) - Any user can list tags.
+     * @deny (create) - No one can create a tag without authorization (TODO).
+     * @deny (update) - No one can update a tag without authorization (TODO).
+     * @deny (delete) - No one can delete a tag without authorization (TODO).
+     * @principle Public read access with restricted writes.
+     */
+    match /tags/{tagId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    /**
+     * @description Allows public read access to creators, but restricts write access.
+     * @path /creators/{creatorId}
+     * @allow (get) - Any user can read creator metadata.
+     * @allow (list) - Any user can list creators.
+     * @deny (create) - No one can create a creator without authorization (TODO).
+     * @deny (update) - No one can update a creator without authorization (TODO).
+     * @deny (delete) - No one can delete a creator without authorization (TODO).
+     * @principle Public read access with restricted writes.
+     */
+    match /creators/{creatorId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    /**
+     * @description Allows public read access to video ratings, but restricts write access.
+     * @path /video_ratings/{videoRatingId}
+     * @allow (get) - Any user can read video rating metadata.
+     * @allow (list) - Any user can list video ratings.
+     * @deny (create) - No one can create a video rating without authorization (TODO).
+     * @deny (update) - No one can update a video rating without authorization (TODO).
+     * @deny (delete) - No one can delete a video rating without authorization (TODO).
+     * @principle Public read access with restricted writes.
+     */
+    match /video_ratings/{videoRatingId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    /**
+     * @description Restricts access to reported videos.
+     * @path /reported_videos/{reportedVideoId}
+     * @deny (get) - No one can get reported videos without authorization (TODO: Add admin/moderator role check).
+     * @deny (list) - No one can list reported videos without authorization (TODO: Add admin/moderator role check).
+     * @deny (create) - No one can create reported videos without authorization (TODO: Add admin/moderator role check).
+     * @deny (update) - No one can update reported videos without authorization (TODO: Add admin/moderator role check).
+     * @deny (delete) - No one can delete reported videos without authorization (TODO: Add admin/moderator role check).
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /reported_videos/{reportedVideoId} {
+      allow get: if false; // TODO: Add admin/moderator role check.
+      allow list: if false; // TODO: Add admin/moderator role check.
+      allow create: if false; // TODO: Add admin/moderator role check.
+      allow update: if false; // TODO: Add admin/moderator role check.
+      allow delete: if false; // TODO: Add admin/moderator role check.
+    }
+
+    /**
+     * @description Restricts access to content policies.
+     * @path /content_policies/{contentPolicyId}
+     * @deny (get) - No one can get content policies without authorization (TODO: Add admin role check).
+     * @deny (list) - No one can list content policies without authorization (TODO: Add admin role check).
+     * @deny (create) - No one can create content policies without authorization (TODO: Add admin role check).
+     * @deny (update) - No one can update content policies without authorization (TODO: Add admin role check).
+     * @deny (delete) - No one can delete content policies without authorization (TODO: Add admin role check).
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /content_policies/{contentPolicyId} {
+      allow get: if false; // TODO: Add admin role check.
+      allow list: if false; // TODO: Add admin role check.
+      allow create: if false; // TODO: Add admin role check.
+      allow update: if false; // TODO: Add admin role check.
+      allow delete: if false; // TODO: Add admin role check.
+    }
+
+    /**
+     * @description Restricts access to moderation logs.
+     * @path /moderation_logs/{moderationLogId}
+     * @deny (get) - No one can get moderation logs without authorization (TODO: Add admin role check).
+     * @deny (list) - No one can list moderation logs without authorization (TODO: Add admin role check).
+     * @deny (create) - No one can create moderation logs without authorization (TODO: Add admin role check).
+     * @deny (update) - No one can update moderation logs without authorization (TODO: Add admin role check).
+     * @deny (delete) - No one can delete moderation logs without authorization (TODO: Add admin role check).
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /moderation_logs/{moderationLogId} {
+      allow get: if false; // TODO: Add admin role check.
+      allow list: if false; // TODO: Add admin role check.
+      allow create: if false; // TODO: Add admin role check.
+      allow update: if false; // TODO: Add admin role check.
+      allow delete: if false; // TODO: Add admin role check.
+    }
+  }
+}

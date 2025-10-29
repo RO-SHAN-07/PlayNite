@@ -1,0 +1,768 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the PlayNite application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "registrationDate": {
+          "type": "string",
+          "description": "Date and time the user registered.",
+          "format": "date-time"
+        },
+        "lastLogin": {
+          "type": "string",
+          "description": "Date and time of the user's last login.",
+          "format": "date-time"
+        },
+        "profilePictureUrl": {
+          "type": "string",
+          "description": "URL of the user's profile picture.",
+          "format": "uri"
+        },
+        "theme": {
+          "type": "string",
+          "description": "User's preferred theme (e.g., dark, light)."
+        },
+        "accessibilitySettings": {
+          "type": "string",
+          "description": "JSON string of accessibility settings for the user. Includes contrast, text size, etc."
+        },
+        "gdprConsentDate": {
+          "type": "string",
+          "description": "Date and time the user provided GDPR consent.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "username",
+        "registrationDate"
+      ]
+    },
+    "Video": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Video",
+      "type": "object",
+      "description": "Represents a video in the PlayNite application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the video entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the video."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the video content."
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Date and time the video was uploaded.",
+          "format": "date-time"
+        },
+        "duration": {
+          "type": "number",
+          "description": "Duration of the video in seconds."
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "description": "URL of the video thumbnail.",
+          "format": "uri"
+        },
+        "videoUrl": {
+          "type": "string",
+          "description": "URL of the video file.",
+          "format": "uri"
+        },
+        "categoryIds": {
+          "type": "array",
+          "description": "References to Categories. (Relationship: Video N:N Category)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tagIds": {
+          "type": "array",
+          "description": "References to Tags. (Relationship: Video N:N Tag)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "creatorId": {
+          "type": "string",
+          "description": "Reference to Creator. (Relationship: Creator 1:N Video)"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "uploadDate",
+        "duration",
+        "thumbnailUrl",
+        "videoUrl"
+      ]
+    },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Represents a category for videos in the PlayNite application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the category entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the category."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the category."
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "description": "URL of the category thumbnail.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
+      ]
+    },
+    "Tag": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Tag",
+      "type": "object",
+      "description": "Represents a tag for videos in the PlayNite application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the tag entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the tag."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Creator": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Creator",
+      "type": "object",
+      "description": "Represents a content creator (non-user uploads) in the PlayNite application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the creator entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the creator."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the creator."
+        },
+        "profileUrl": {
+          "type": "string",
+          "description": "URL of the creator's profile.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "VideoRating": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VideoRating",
+      "type": "object",
+      "description": "Represents a rating given to a video by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the video rating entity."
+        },
+        "videoId": {
+          "type": "string",
+          "description": "Reference to Video. (Relationship: Video 1:N VideoRating)"
+        },
+        "rating": {
+          "type": "number",
+          "description": "The rating given by the user (e.g., 1-5)."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Date and time the rating was given.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "videoId",
+        "rating",
+        "timestamp"
+      ]
+    },
+    "WatchLater": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WatchLater",
+      "type": "object",
+      "description": "Represents a video added to a user's 'watch later' list.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the watch later entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N WatchLater)"
+        },
+        "videoId": {
+          "type": "string",
+          "description": "Reference to Video. (Relationship: Video 1:N WatchLater)"
+        },
+        "addedDate": {
+          "type": "string",
+          "description": "Date and time the video was added to the 'watch later' list.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "videoId",
+        "addedDate"
+      ]
+    },
+    "Favorite": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Favorite",
+      "type": "object",
+      "description": "Represents a video added to a user's favorites list.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the favorite entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Favorite)"
+        },
+        "videoId": {
+          "type": "string",
+          "description": "Reference to Video. (Relationship: Video 1:N Favorite)"
+        },
+        "addedDate": {
+          "type": "string",
+          "description": "Date and time the video was added to the favorites list.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "videoId",
+        "addedDate"
+      ]
+    },
+    "VideoHistory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VideoHistory",
+      "type": "object",
+      "description": "Represents a user's video viewing history.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the video history entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N VideoHistory)"
+        },
+        "videoId": {
+          "type": "string",
+          "description": "Reference to Video. (Relationship: Video 1:N VideoHistory)"
+        },
+        "watchDate": {
+          "type": "string",
+          "description": "Date and time the video was watched.",
+          "format": "date-time"
+        },
+        "watchPosition": {
+          "type": "number",
+          "description": "The position (in seconds) where the user stopped watching the video."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "videoId",
+        "watchDate",
+        "watchPosition"
+      ]
+    },
+    "ReportedVideo": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ReportedVideo",
+      "type": "object",
+      "description": "Represents a video reported as inappropriate.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the reported video entity."
+        },
+        "videoId": {
+          "type": "string",
+          "description": "Reference to Video. (Relationship: Video 1:N ReportedVideo)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N ReportedVideo). Optional, as reports can be anonymous."
+        },
+        "reportDate": {
+          "type": "string",
+          "description": "Date and time the video was reported.",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for reporting the video."
+        }
+      },
+      "required": [
+        "id",
+        "videoId",
+        "reportDate",
+        "reason"
+      ]
+    },
+    "Playlist": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Playlist",
+      "type": "object",
+      "description": "Represents a custom video playlist created by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the playlist entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Playlist)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the playlist."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the playlist."
+        },
+        "creationDate": {
+          "type": "string",
+          "description": "Date and time the playlist was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "creationDate"
+      ]
+    },
+    "PlaylistItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PlaylistItem",
+      "type": "object",
+      "description": "Represents a video within a playlist.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the playlist item entity."
+        },
+        "playlistId": {
+          "type": "string",
+          "description": "Reference to Playlist. (Relationship: Playlist 1:N PlaylistItem)"
+        },
+        "videoId": {
+          "type": "string",
+          "description": "Reference to Video. (Relationship: Video 1:N PlaylistItem)"
+        },
+        "itemOrder": {
+          "type": "number",
+          "description": "The order of the video within the playlist."
+        },
+        "addedDate": {
+          "type": "string",
+          "description": "Date and time the video was added to the playlist.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "playlistId",
+        "videoId",
+        "itemOrder",
+        "addedDate"
+      ]
+    },
+    "ContentPolicy": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContentPolicy",
+      "type": "object",
+      "description": "Represents a content policy used for moderation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the content policy entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the content policy."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the policy."
+        },
+        "rules": {
+          "type": "string",
+          "description": "JSON string representing the rules of the policy."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "rules"
+      ]
+    },
+    "ModerationLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ModerationLog",
+      "type": "object",
+      "description": "Represents a log entry for content moderation actions.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the moderation log entry."
+        },
+        "videoId": {
+          "type": "string",
+          "description": "Reference to Video. (Relationship: Video 1:N ModerationLog)"
+        },
+        "policyId": {
+          "type": "string",
+          "description": "Reference to ContentPolicy. (Relationship: ContentPolicy 1:N ModerationLog)"
+        },
+        "action": {
+          "type": "string",
+          "description": "The action taken (e.g., 'removed', 'flagged', 'approved')."
+        },
+        "moderationDate": {
+          "type": "string",
+          "description": "Date and time the moderation action was taken.",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reasoning behind the moderation action."
+        }
+      },
+      "required": [
+        "id",
+        "videoId",
+        "policyId",
+        "action",
+        "moderationDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Accessible only to the user and admins.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/watch_later/{watchLaterId}",
+        "definition": {
+          "entityName": "WatchLater",
+          "schema": {
+            "$ref": "#/backend/entities/WatchLater"
+          },
+          "description": "Stores videos in a user's 'watch later' list. Accessible only to the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "watchLaterId",
+              "description": "The unique identifier of the watch later item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/favorites/{favoriteId}",
+        "definition": {
+          "entityName": "Favorite",
+          "schema": {
+            "$ref": "#/backend/entities/Favorite"
+          },
+          "description": "Stores videos in a user's favorites list. Accessible only to the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "favoriteId",
+              "description": "The unique identifier of the favorite item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/video_history/{videoHistoryId}",
+        "definition": {
+          "entityName": "VideoHistory",
+          "schema": {
+            "$ref": "#/backend/entities/VideoHistory"
+          },
+          "description": "Stores a user's video viewing history. Accessible only to the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "videoHistoryId",
+              "description": "The unique identifier of the video history item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/playlists/{playlistId}",
+        "definition": {
+          "entityName": "Playlist",
+          "schema": {
+            "$ref": "#/backend/entities/Playlist"
+          },
+          "description": "Stores playlists created by a user. Accessible only to the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "playlistId",
+              "description": "The unique identifier of the playlist."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/playlists/{playlistId}/playlist_items/{playlistItemId}",
+        "definition": {
+          "entityName": "PlaylistItem",
+          "schema": {
+            "$ref": "#/backend/entities/PlaylistItem"
+          },
+          "description": "Stores items within a user's playlist. Accessible only to the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "playlistId",
+              "description": "The unique identifier of the playlist."
+            },
+            {
+              "name": "playlistItemId",
+              "description": "The unique identifier of the playlist item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/videos/{videoId}",
+        "definition": {
+          "entityName": "Video",
+          "schema": {
+            "$ref": "#/backend/entities/Video"
+          },
+          "description": "Stores video metadata. Publicly readable, but restricted write access.",
+          "params": [
+            {
+              "name": "videoId",
+              "description": "The unique identifier of the video."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Stores video categories. Publicly readable, but restricted write access.",
+          "params": [
+            {
+              "name": "categoryId",
+              "description": "The unique identifier of the category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/tags/{tagId}",
+        "definition": {
+          "entityName": "Tag",
+          "schema": {
+            "$ref": "#/backend/entities/Tag"
+          },
+          "description": "Stores video tags. Publicly readable, but restricted write access.",
+          "params": [
+            {
+              "name": "tagId",
+              "description": "The unique identifier of the tag."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/creators/{creatorId}",
+        "definition": {
+          "entityName": "Creator",
+          "schema": {
+            "$ref": "#/backend/entities/Creator"
+          },
+          "description": "Stores content creator information. Publicly readable, but restricted write access.",
+          "params": [
+            {
+              "name": "creatorId",
+              "description": "The unique identifier of the creator."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/video_ratings/{videoRatingId}",
+        "definition": {
+          "entityName": "VideoRating",
+          "schema": {
+            "$ref": "#/backend/entities/VideoRating"
+          },
+          "description": "Stores ratings given to videos by users. Publicly readable, but restricted write access.",
+          "params": [
+            {
+              "name": "videoRatingId",
+              "description": "The unique identifier of the video rating."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/reported_videos/{reportedVideoId}",
+        "definition": {
+          "entityName": "ReportedVideo",
+          "schema": {
+            "$ref": "#/backend/entities/ReportedVideo"
+          },
+          "description": "Stores reports of inappropriate videos. Restricted access.",
+          "params": [
+            {
+              "name": "reportedVideoId",
+              "description": "The unique identifier of the reported video."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/content_policies/{contentPolicyId}",
+        "definition": {
+          "entityName": "ContentPolicy",
+          "schema": {
+            "$ref": "#/backend/entities/ContentPolicy"
+          },
+          "description": "Stores content policies for moderation. Restricted access to admins.",
+          "params": [
+            {
+              "name": "contentPolicyId",
+              "description": "The unique identifier of the content policy."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/moderation_logs/{moderationLogId}",
+        "definition": {
+          "entityName": "ModerationLog",
+          "schema": {
+            "$ref": "#/backend/entities/ModerationLog"
+          },
+          "description": "Stores logs of content moderation actions. Restricted access to admins.",
+          "params": [
+            {
+              "name": "moderationLogId",
+              "description": "The unique identifier of the moderation log entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to prioritize authorization independence, clarity, and scalability. It utilizes denormalization of authorization data, structural segregation for homogeneous security postures, and consistent access modeling to ensure simple and robust security rules. The structure avoids hierarchical authorization dependencies to allow atomic operations (transactions/batches) and simplifies debugging.\n\nAuthorization Independence (CRITICAL): All user-owned data is stored under the `/users/{userId}` path. For collaborative entities, a membership map is denormalized into each document to avoid `get()` calls in security rules.\n\nStructural Segregation (Homogeneous Security Posture): Data with different access needs are stored in separate collections (e.g., public videos, user-owned playlists, admin-managed content policies).\n\nAccess Modeling (Standardization and Consistency): User-owned data follows the `/users/{userId}/{entityName}/{entityId}` pattern. Collaborative data uses membership maps. Global roles are managed via dedicated collections.\n\nQAPs (Rules are not Filters): The structure supports secure `list` operations by segregating data based on access control requirements and utilizing membership maps for collaborative entities.\n\nInvariants: Ownership is enforced via path-based rules and denormalized data. Timestamps and denormalized data integrity are enforced within security rules."
+  }
+}
