@@ -1,12 +1,71 @@
+'use client';
 import { VideoCard } from '@/components/video-card';
-import { videos } from '@/lib/data';
 import { History, Star, Upload } from 'lucide-react';
 import Link from 'next/link';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, query, limit } from 'firebase/firestore';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import type { Video } from '@/lib/data';
+import { useMemo } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function VideoRowSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      {Array.from({ length: 5 }).map((_, i) => (
+         <div key={i} className="space-y-2">
+            <Skeleton className="aspect-video w-full rounded-lg" />
+            <div className="space-y-1">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+            </div>
+         </div>
+      ))}
+    </div>
+  );
+}
+
 
 export default function LibraryPage() {
-  const favoritedVideos = videos.slice(0, 5);
-  const historyVideos = videos.slice(5, 10);
-  const uploadedVideos = videos.slice(10, 15);
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const favoritesQuery = useMemo(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, `users/${user.uid}/favorites`), limit(5));
+  }, [user, firestore]);
+  
+  const historyQuery = useMemo(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, `users/${user.uid}/history`), limit(5));
+  }, [user, firestore]);
+  
+  const uploadsQuery = useMemo(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'videos'), where('creatorId', '==', user.uid), limit(5));
+  }, [user, firestore]);
+
+  const { data: favorites, loading: favoritesLoading } = useCollection(favoritesQuery);
+  const { data: history, loading: historyLoading } = useCollection(historyQuery);
+  const { data: uploads, loading: uploadsLoading } = useCollection(uploadsQuery);
+
+  const { data: favoriteVideos, loading: favoriteVideosLoading } = useCollection<Video>(
+    useMemo(() => {
+      if (!firestore || !favorites || favorites.length === 0) return null;
+      const videoIds = favorites.map(f => f.videoId);
+      return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
+    }, [firestore, favorites])
+  );
+
+  const { data: historyVideos, loading: historyVideosLoading } = useCollection<Video>(
+    useMemo(() => {
+      if (!firestore || !history || history.length === 0) return null;
+      const videoIds = history.map(h => h.videoId);
+      return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
+    }, [firestore, history])
+  );
+
+  const isLoading = favoritesLoading || historyLoading || uploadsLoading || favoriteVideosLoading || historyVideosLoading;
 
   return (
     <div className="space-y-12">
@@ -27,11 +86,15 @@ export default function LibraryPage() {
             See all
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {favoritedVideos.map((video) => (
-            <VideoCard key={video.id} video={video} />
-          ))}
-        </div>
+        {isLoading ? <VideoRowSkeleton/> : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {favoriteVideos && favoriteVideos.length > 0 ? (
+                favoriteVideos.map((video) => <VideoCard key={video.id} video={video} />)
+              ) : (
+                <p className="text-muted-foreground col-span-full">You have no favorited videos.</p>
+              )}
+            </div>
+        )}
       </section>
 
       <section>
@@ -44,11 +107,15 @@ export default function LibraryPage() {
             See all
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {historyVideos.map((video) => (
-            <VideoCard key={video.id} video={video} />
-          ))}
-        </div>
+        {isLoading ? <VideoRowSkeleton/> : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {historyVideos && historyVideos.length > 0 ? (
+                historyVideos.map((video) => <VideoCard key={video.id} video={video} />)
+              ) : (
+                <p className="text-muted-foreground col-span-full">Your watch history is empty.</p>
+              )}
+            </div>
+        )}
       </section>
       
       <section>
@@ -61,11 +128,15 @@ export default function LibraryPage() {
             Go to Studio
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {uploadedVideos.map((video) => (
-            <VideoCard key={video.id} video={video} />
-          ))}
-        </div>
+        {isLoading ? <VideoRowSkeleton/> : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {uploads && uploads.length > 0 ? (
+                uploads.map((video) => <VideoCard key={video.id} video={video as Video} />)
+              ) : (
+                <p className="text-muted-foreground col-span-full">You haven't uploaded any videos.</p>
+              )}
+            </div>
+        )}
       </section>
     </div>
   );

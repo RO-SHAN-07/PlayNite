@@ -21,17 +21,27 @@ import { UploadCloud, Loader2, CheckCircle } from 'lucide-react';
 import { automatedVideoTagging } from '@/ai/flows/automated-video-tagging';
 import { Badge } from '@/components/ui/badge';
 import { summarizeVideo } from '@/ai/flows/video-summarization';
+import { useUser, useFirestore } from '@/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 const uploadFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
   description: z.string().optional(),
   tags: z.string().optional(),
-  videoFile: z.instanceof(File).refine(file => file.size > 0, 'Please upload a video file.'),
+  // For simplicity, we are not handling actual file uploads to a storage bucket.
+  // We'll simulate the upload and create a Firestore document.
+  // videoFile: z.instanceof(File).refine(file => file.size > 0, 'Please upload a video file.'),
+  videoFile: z.any(),
 });
 
 type UploadFormValues = z.infer<typeof uploadFormSchema>;
 
 export default function UploadPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const router = useRouter();
+
   const [isUploading, setIsUploading] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
   const [isGeneratingTags, setIsGeneratingTags] = useState(false);
@@ -94,15 +104,43 @@ export default function UploadPage() {
 
 
   async function onSubmit(data: UploadFormValues) {
+    if (!user || !firestore) {
+      toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to upload a video.' });
+      router.push('/auth/login');
+      return;
+    }
+
     setIsUploading(true);
-    // Simulate upload process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsUploading(false);
-    setIsUploaded(true);
-    toast({
-      title: 'Upload Complete!',
-      description: `Your video "${data.title}" has been uploaded successfully.`,
-    });
+    // Simulate upload process & create Firestore entry
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const videosCollection = collection(firestore, 'videos');
+      await addDoc(videosCollection, {
+        title: data.title,
+        description: data.description,
+        tags: data.tags?.split(',').map(t => t.trim()).filter(Boolean) || [],
+        creatorId: user.uid,
+        creator: user.displayName || 'Anonymous',
+        views: 0,
+        duration: "0:00", // Placeholder
+        thumbnailUrl: "https://picsum.photos/seed/new-vid/400/225", // Placeholder
+        videoUrl: "", // Placeholder
+        uploadedAt: serverTimestamp(),
+        categoryId: 'new-upload', // Placeholder
+      });
+      
+      setIsUploading(false);
+      setIsUploaded(true);
+      toast({
+        title: 'Upload Complete!',
+        description: `Your video "${data.title}" has been uploaded successfully.`,
+      });
+
+    } catch (error) {
+       toast({ variant: 'destructive', title: 'Error', description: 'Failed to upload video.' });
+       setIsUploading(false);
+    }
   }
 
   if (isUploaded) {

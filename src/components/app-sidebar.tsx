@@ -5,7 +5,6 @@ import {
   Home,
   Library,
   Settings,
-  User,
   Star,
   History,
   LogOut,
@@ -27,7 +26,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useAuth, useUser } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 const SIDEBAR_SECTIONS = [
   {
@@ -79,9 +79,14 @@ const SIDEBAR_SECTIONS = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const avatarImage = PlaceHolderImages.find((img) => img.id === 'user-avatar-1');
-  // Mock signed-in state
-  const isSignedIn = true;
+  const { user, loading } = useUser();
+  const auth = useAuth();
+
+  const handleLogout = async () => {
+    if (auth) {
+      await signOut(auth);
+    }
+  };
 
   return (
     <Sidebar
@@ -137,7 +142,11 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarSeparator />
         <SidebarGroup>
-          {isSignedIn ? (
+          {loading ? (
+            <div className="p-2">
+                <div className="h-8 w-full bg-muted/20 animate-pulse rounded-md" />
+            </div>
+          ) : user ? (
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -147,10 +156,10 @@ export function AppSidebar() {
                 >
                   <Link href="/account">
                     <Avatar className="h-6 w-6">
-                      {avatarImage && <AvatarImage src={avatarImage.imageUrl} data-ai-hint={avatarImage.imageHint || ''} />}
-                      <AvatarFallback>JD</AvatarFallback>
+                      {user.photoURL && <AvatarImage src={user.photoURL} />}
+                      <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span>Jane Doe</span>
+                    <span>{user.displayName || user.email}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -167,11 +176,9 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/auth/login">
-                    <LogOut />
-                    <span>Log Out</span>
-                  </Link>
+                <SidebarMenuButton onClick={handleLogout}>
+                  <LogOut />
+                  <span>Log Out</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

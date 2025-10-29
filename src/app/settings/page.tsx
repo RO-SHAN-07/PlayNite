@@ -25,9 +25,14 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { useUser, useAuth, useFirestore } from '@/firebase';
+import { useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
+import { updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 const settingsFormSchema = z.object({
-  username: z.string().min(2, 'Username must be at least 2 characters.'),
+  displayName: z.string().min(2, 'Username must be at least 2 characters.'),
   email: z.string().email('Please enter a valid email address.'),
   language: z.string(),
   enableNotifications: z.boolean(),
@@ -37,26 +42,74 @@ const settingsFormSchema = z.object({
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 
-const defaultValues: Partial<SettingsFormValues> = {
-  username: 'Jane Doe',
-  email: 'jane.doe@example.com',
-  language: 'en',
-  enableNotifications: true,
-  autoplayNext: true,
-  videoQuality: 'auto',
-};
-
 export default function SettingsPage() {
-  const form = useForm<SettingsFormValues>({
-    resolver: zodResolver(settingsFormSchema),
-    defaultValues,
-  });
+    const { user, loading: userLoading } = useUser();
+    const auth = useAuth();
+    const firestore = useFirestore();
 
-  function onSubmit(data: SettingsFormValues) {
-    toast({
-      title: 'Settings saved!',
-      description: 'Your new settings have been successfully saved.',
+    const form = useForm<SettingsFormValues>({
+        resolver: zodResolver(settingsFormSchema),
+        defaultValues: {
+            displayName: '',
+            email: '',
+            language: 'en',
+            enableNotifications: true,
+            autoplayNext: true,
+            videoQuality: 'auto',
+        },
     });
+
+    useEffect(() => {
+        if (user) {
+            form.reset({
+                displayName: user.displayName || '',
+                email: user.email || '',
+                // These would typically be loaded from user preferences in Firestore
+                language: 'en',
+                enableNotifications: true,
+                autoplayNext: true,
+                videoQuality: 'auto',
+            });
+        }
+    }, [user, form]);
+
+  async function onSubmit(data: SettingsFormValues) {
+    if (!user || !auth?.currentUser || !firestore) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Not authenticated.' });
+        return;
+    }
+    
+    try {
+        if (data.displayName !== user.displayName) {
+            await updateProfile(auth.currentUser, { displayName: data.displayName });
+        }
+        
+        const userDocRef = doc(firestore, 'users', user.uid);
+        await setDoc(userDocRef, { displayName: data.displayName }, { merge: true });
+
+        // In a real app, you would also save other settings like language, notifications, etc.
+        // await setDoc(userDocRef, { preferences: { language: data.language, ... } }, { merge: true });
+
+        toast({
+          title: 'Settings saved!',
+          description: 'Your new settings have been successfully saved.',
+        });
+
+    } catch(error: any) {
+         toast({
+          variant: 'destructive',
+          title: 'Uh oh! Something went wrong.',
+          description: error.message || 'Could not save settings.',
+        });
+    }
+  }
+
+  if (userLoading) {
+      return (
+        <div className="max-w-4xl mx-auto flex justify-center items-center h-96">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+        </div>
+      )
   }
 
   return (
@@ -72,7 +125,7 @@ export default function SettingsPage() {
             <Separator />
             <FormField
               control={form.control}
-              name="username"
+              name="displayName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Username</FormLabel>
@@ -91,10 +144,10 @@ export default function SettingsPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="Your email" {...field} />
+                    <Input type="email" placeholder="Your email" {...field} disabled />
                   </FormControl>
                   <FormDescription>
-                    We will send important notifications to this email.
+                    Your email address cannot be changed.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -194,7 +247,10 @@ export default function SettingsPage() {
             />
           </div>
 
-          <Button type="submit">Save Changes</Button>
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Changes
+          </Button>
         </form>
       </Form>
     </div>
