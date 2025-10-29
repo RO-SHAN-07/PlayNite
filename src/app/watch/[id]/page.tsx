@@ -17,8 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { VideoPlayer } from '@/components/video-player';
 
-export default function WatchPage({ params }: { params: { id: string } }) {
-  const videoId = params.id;
+export default function WatchPage({ params: { id: videoId } }: { params: { id: string } }) {
   const firestore = useFirestore();
   const { user } = useUser();
   const router = useRouter();
@@ -96,12 +95,12 @@ export default function WatchPage({ params }: { params: { id: string } }) {
 
 
   if (videoLoading) {
-    return <div class="grid lg:grid-cols-3 gap-8">
-      <div class="lg:col-span-2 space-y-6">
-        <Skeleton class="aspect-video w-full rounded-2xl" />
-        <div class="space-y-4">
-            <Skeleton class="h-8 w-3/4" />
-            <Skeleton class="h-5 w-1/2" />
+    return <div className="grid lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-2 space-y-6">
+        <Skeleton className="aspect-video w-full rounded-2xl" />
+        <div className="space-y-4">
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-5 w-1/2" />
         </div>
       </div>
     </div>;
