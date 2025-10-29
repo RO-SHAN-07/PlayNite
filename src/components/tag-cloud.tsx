@@ -25,11 +25,15 @@ const fontSizes = [
 export function TagCloud() {
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [skeletonWidths, setSkeletonWidths] = useState<string[]>([]);
 
   useEffect(() => {
+    // Generate skeleton widths only on the client
+    setSkeletonWidths(Array.from({ length: 15 }, () => `${Math.random() * 80 + 80}px`));
+
     async function fetchTags() {
       try {
-        setLoading(true);
+        // No need to set loading to true here as it's the default state
         const result = await generateContentTagsCloud({});
         // Add more tags for a better visual effect
         const moreTags = [
@@ -51,9 +55,16 @@ export function TagCloud() {
   if (loading) {
     return (
       <div className="flex flex-wrap gap-4">
-        {Array.from({ length: 15 }).map((_, index) => (
-          <Skeleton key={index} className="h-8 rounded-full" style={{ width: `${Math.random() * 80 + 80}px` }}/>
-        ))}
+        {skeletonWidths.length > 0 ? (
+          skeletonWidths.map((width, index) => (
+            <Skeleton key={index} className="h-8 rounded-full" style={{ width }}/>
+          ))
+        ) : (
+          // Render a static set of skeletons on the server to avoid hydration issues
+          Array.from({ length: 15 }).map((_, index) => (
+            <Skeleton key={index} className="h-8 w-24 rounded-full" />
+          ))
+        )}
       </div>
     );
   }
