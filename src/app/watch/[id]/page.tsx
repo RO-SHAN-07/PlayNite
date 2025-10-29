@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -111,7 +109,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
 
     setIsSavingMemory(true);
     try {
-        const memoriesCollection = collection(firestore, `users/${user.uid}/memories`);
+        const memoriesCollection = collection(firestore, 'memories');
         const currentTime = videoPlayerRef.current.getCurrentTime();
         
         await addDocumentNonBlocking(memoriesCollection, {

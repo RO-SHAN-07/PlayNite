@@ -1,9 +1,9 @@
 'use client';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Banknote, Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { Memory, Video } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -26,7 +26,7 @@ export default function MemoryBankPage() {
 
   const memoriesQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, `users/${user.uid}/memories`), orderBy('addedDate', 'desc'));
+    return query(collection(firestore, 'memories'), where('userId', '==', user.uid), orderBy('addedDate', 'desc'));
   }, [user, firestore]);
 
   const { data: memories, isLoading: memoriesLoading } = useCollection<Memory>(memoriesQuery);
@@ -37,7 +37,7 @@ export default function MemoryBankPage() {
   }, [memories]);
 
   const videosQuery = useMemoFirebase(() => {
-    if (!firestore || videoIds.length === 0) return null;
+    if (!firestore || !videoIds || videoIds.length === 0) return null;
     return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
   }, [firestore, videoIds]);
 
