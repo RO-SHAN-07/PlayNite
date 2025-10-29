@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { categories, type Video } from '@/lib/data';
+import { embeddedVideoKeys } from '@/lib/embedded-videos';
 import { VideoCard } from '@/components/video-card';
 import { EmbeddedVideo } from '@/components/embedded-video';
 import { PlayCircle, Plus, Loader2 } from 'lucide-react';
@@ -189,22 +190,22 @@ export default function Home() {
       {/* New Releases */}
       <section>
         <h2 className="text-3xl font-bold font-headline mb-6">New Releases</h2>
-        {newReleasesLoading ? (
-            <VideoRowSkeleton />
-        ) : newReleases && newReleases.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                <div className="col-span-full">
-                  <EmbeddedVideo />
-                </div>
-                {newReleases.map((video) => (
-                    <VideoCard key={video.id} video={video} />
-                ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {embeddedVideoKeys.map((viewkey) => (
+            <EmbeddedVideo key={viewkey} viewkey={viewkey} />
+          ))}
+          {newReleasesLoading ? (
+            <VideoRowSkeleton count={5 - embeddedVideoKeys.length} />
+          ) : newReleases && newReleases.length > 0 ? (
+            newReleases.map((video) => (
+              <VideoCard key={video.id} video={video} />
+            ))
+          ) : (
+            <div className="text-center text-muted-foreground col-span-full py-12">
+              <p>No new releases at the moment. Check back later!</p>
             </div>
-        ) : (
-             <div className="text-center text-muted-foreground col-span-full py-12">
-                <p>No new releases at the moment. Check back later!</p>
-            </div>
-        )}
+          )}
+        </div>
       </section>
     </div>
   );

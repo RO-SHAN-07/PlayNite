@@ -1,8 +1,8 @@
-export function EmbeddedVideo() {
+export function EmbeddedVideo({ viewkey }: { viewkey: string }) {
   return (
     <div className="aspect-video w-full rounded-lg overflow-hidden">
       <iframe
-        src="https://www.pornhub.com/embed/0ef399b63a72d0e4ab57"
+        src={`https://www.pornhub.com/embed/${viewkey}`}
         frameBorder="0"
         width="100%"
         height="100%"
