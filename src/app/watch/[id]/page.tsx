@@ -10,7 +10,7 @@ import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import { useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { collection, doc, serverTimestamp, query, where, limit } from 'firebase/firestore';
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
@@ -46,7 +46,13 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   }, [favoritesRef, videoId]);
 
   const { data: favorite, isLoading: favoriteLoading } = useCollection(favoriteQuery);
-  const isFavorited = favorite && favorite.length > 0;
+  const isFavoritedInitially = useMemo(() => favorite && favorite.length > 0, [favorite]);
+
+  const [isFavorited, setIsFavorited] = useState(isFavoritedInitially);
+  
+  useEffect(() => {
+    setIsFavorited(isFavoritedInitially);
+  }, [isFavoritedInitially]);
 
   const recommendedVideosQuery = useMemoFirebase(() => {
     if (!firestore || !video) return null;
@@ -85,15 +91,25 @@ export default function WatchPage({ params }: { params: { id: string } }) {
 
     const favoriteRef = doc(firestore, `users/${user.uid}/favorites`, video.id);
 
-    if (isFavorited) {
-        deleteDocumentNonBlocking(favoriteRef);
-        toast({ title: 'Removed from favorites' });
-    } else {
-        setDocumentNonBlocking(favoriteRef, {
-            videoId: video.id,
-            addedDate: serverTimestamp(),
-        }, { merge: true });
-        toast({ title: 'Added to favorites!' });
+    // Optimistic UI update
+    const previousState = isFavorited;
+    setIsFavorited(!previousState);
+
+    try {
+      if (previousState) {
+          deleteDocumentNonBlocking(favoriteRef);
+          toast({ title: 'Removed from favorites' });
+      } else {
+          setDocumentNonBlocking(favoriteRef, {
+              videoId: video.id,
+              addedDate: serverTimestamp(),
+          }, { merge: true });
+          toast({ title: 'Added to favorites!' });
+      }
+    } catch (error) {
+      // Revert on error
+      setIsFavorited(previousState);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not update favorites.' });
     }
   };
 
@@ -190,7 +206,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
             {recommendedVideosLoading 
               ? Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
               : recommendedVideos?.filter(v => v.id !== video.id).map(recVideo => (
-                <VideoCard key={recVideo.id} video={recVideo} />
+                <VideoCard key={recVideo.id} video={recVideo} active={recVideo.id === video.id} />
             ))}
         </div>
       </div>

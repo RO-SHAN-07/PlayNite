@@ -14,6 +14,13 @@ export interface Video {
   categoryId: string;
 }
 
+export interface UserPreferences {
+    language?: string;
+    enableNotifications?: boolean;
+    autoplayNext?: boolean;
+    videoQuality?: string;
+}
+
 export interface UserProfile {
   uid: string;
   email: string | null;
@@ -21,6 +28,7 @@ export interface UserProfile {
   photoURL: string | null;
   bio?: string;
   joined?: Timestamp | FieldValue;
+  preferences?: UserPreferences;
 }
 
 export interface Favorite {

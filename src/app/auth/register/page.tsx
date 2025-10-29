@@ -12,12 +12,14 @@ import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { UserProfile } from '@/lib/data';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -32,7 +34,7 @@ export default function RegisterPage() {
     }
   }, [isUserLoading, user, router]);
 
-  if(isUserLoading || user) {
+  if(isUserLoading) {
     return (
         <div className="flex min-h-screen items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -43,19 +45,23 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth || !firestore) return;
+    if (!agreedToTerms) {
+        toast({ variant: 'destructive', title: 'Terms not accepted', description: 'You must agree to the terms of service.' });
+        return;
+    }
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const newUser = userCredential.user;
       const displayName = `${firstName} ${lastName}`.trim();
-      await updateProfile(user, { displayName });
+      await updateProfile(newUser, { displayName });
 
-      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocRef = doc(firestore, 'users', newUser.uid);
       const userProfile: UserProfile = {
-        uid: user.uid,
-        email: user.email,
+        uid: newUser.uid,
+        email: newUser.email,
         displayName: displayName,
-        photoURL: user.photoURL,
+        photoURL: newUser.photoURL,
         joined: serverTimestamp(),
       };
       setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
@@ -71,18 +77,22 @@ export default function RegisterPage() {
 
   const handleGoogleLogin = async () => {
     if (!auth || !firestore) return;
+    if (!agreedToTerms) {
+        toast({ variant: 'destructive', title: 'Terms not accepted', description: 'You must agree to the terms of service.' });
+        return;
+    }
     setGoogleLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const newUser = result.user;
 
-      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocRef = doc(firestore, 'users', newUser.uid);
       const userProfile: UserProfile = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
+        uid: newUser.uid,
+        email: newUser.email,
+        displayName: newUser.displayName,
+        photoURL: newUser.photoURL,
         joined: serverTimestamp(),
       };
       setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
@@ -124,12 +134,21 @@ export default function RegisterPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <div className="flex items-center space-x-2">
+                <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)} />
+                <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                    I agree to the <Link href="/terms" className="underline text-primary">terms of service</Link>
+                </label>
+            </div>
+            <Button type="submit" className="w-full" disabled={loading || !agreedToTerms}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create an account
             </Button>
           </form>
-            <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin} disabled={googleLoading}>
+            <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin} disabled={googleLoading || !agreedToTerms}>
               {googleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign up with Google
             </Button>

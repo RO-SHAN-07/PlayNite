@@ -12,12 +12,14 @@ import { useFirestore, useMemoFirebase } from '@/firebase';
 import { useMemo } from 'react';
 import { Skeleton } from './ui/skeleton';
 import { UserProfile } from '@/lib/data';
+import { cn } from '@/lib/utils';
 
 type VideoCardProps = {
   video: Video;
+  active?: boolean;
 };
 
-export function VideoCard({ video }: VideoCardProps) {
+export function VideoCard({ video, active = false }: VideoCardProps) {
   const firestore = useFirestore();
 
   const creatorRef = useMemoFirebase(() => {
@@ -36,7 +38,7 @@ export function VideoCard({ video }: VideoCardProps) {
   
   return (
     <Link href={`/watch/${video.id}`}>
-      <Card className="overflow-hidden border-none bg-transparent shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20">
+      <Card className={cn("overflow-hidden border-none bg-transparent shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20", active && "bg-primary/10")}>
         <CardContent className="p-0">
           <div className="group relative aspect-video overflow-hidden rounded-lg">
             {video.thumbnailUrl ? (

@@ -3,7 +3,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -25,12 +24,14 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { useUser, useAuth, useFirestore, updateDocumentNonBlocking } from '@/firebase';
+import { useUser, useAuth, useFirestore, updateDocumentNonBlocking, useMemoFirebase } from '@/firebase';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import type { UserProfile } from '@/lib/data';
 
 const settingsFormSchema = z.object({
   displayName: z.string().min(2, 'Username must be at least 2 characters.'),
@@ -49,6 +50,13 @@ export default function SettingsPage() {
     const firestore = useFirestore();
     const router = useRouter();
 
+    const userDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, 'users', user.uid);
+    }, [user, firestore]);
+
+    const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userDocRef);
+
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsFormSchema),
         defaultValues: {
@@ -65,35 +73,47 @@ export default function SettingsPage() {
         if (!isUserLoading && !user) {
             router.push('/auth/login');
         }
-        if (user) {
+        if (user && userProfile) {
             form.reset({
                 displayName: user.displayName || '',
                 email: user.email || '',
-                // These would typically be loaded from user preferences in Firestore
-                language: 'en',
-                enableNotifications: true,
-                autoplayNext: true,
-                videoQuality: 'auto',
+                language: userProfile.preferences?.language || 'en',
+                enableNotifications: userProfile.preferences?.enableNotifications ?? true,
+                autoplayNext: userProfile.preferences?.autoplayNext ?? true,
+                videoQuality: userProfile.preferences?.videoQuality || 'auto',
+            });
+        } else if (user) {
+             form.reset({
+                displayName: user.displayName || '',
+                email: user.email || '',
             });
         }
-    }, [user, isUserLoading, form, router]);
+    }, [user, isUserLoading, userProfile, form, router]);
 
   async function onSubmit(data: SettingsFormValues) {
-    if (!user || !auth?.currentUser || !firestore) {
+    if (!user || !auth?.currentUser || !userDocRef) {
         toast({ variant: 'destructive', title: 'Error', description: 'Not authenticated.' });
         return;
     }
     
     try {
+        const promises = [];
         if (data.displayName !== user.displayName) {
-            await updateProfile(auth.currentUser, { displayName: data.displayName });
+            promises.push(updateProfile(auth.currentUser, { displayName: data.displayName }));
         }
         
-        const userDocRef = doc(firestore, 'users', user.uid);
-        updateDocumentNonBlocking(userDocRef, { displayName: data.displayName });
+        const settingsToUpdate: Partial<UserProfile> = {
+            displayName: data.displayName,
+            preferences: {
+                language: data.language,
+                enableNotifications: data.enableNotifications,
+                autoplayNext: data.autoplayNext,
+                videoQuality: data.videoQuality,
+            }
+        };
 
-        // In a real app, you would also save other settings like language, notifications, etc.
-        // updateDocumentNonBlocking(userDocRef, { preferences: { language: data.language, ... } });
+        updateDocumentNonBlocking(userDocRef, settingsToUpdate);
+        await Promise.all(promises);
 
         toast({
           title: 'Settings saved!',
@@ -109,7 +129,7 @@ export default function SettingsPage() {
     }
   }
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || profileLoading || !user) {
       return (
         <div className="max-w-4xl mx-auto flex justify-center items-center h-96">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />

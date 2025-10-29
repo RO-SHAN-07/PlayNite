@@ -3,14 +3,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, Mail } from 'lucide-react';
+import { placeholderImages } from '@/lib/placeholder-images';
+import Image from 'next/image';
 
 const developers = [
-  { name: 'Roshan Sahu', initials: 'RS' },
-  { name: 'Papun Sahu', initials: 'PS' },
-  { name: 'Rohan Sahu', initials: 'RS' },
+  { name: 'Roshan Sahu', initials: 'RS', imageId: 'dev-roshan' },
+  { name: 'Papun Sahu', initials: 'PS', imageId: 'dev-papun' },
+  { name: 'Rohan Sahu', initials: 'RS', imageId: 'dev-rohan' },
 ];
 
 export default function AboutPage() {
+
+  const getImageUrl = (id: string) => {
+    return placeholderImages.find(p => p.id === id)?.imageUrl || `https://picsum.photos/seed/${id}/100/100`;
+  }
+  const getImageHint = (id: string) => {
+    return placeholderImages.find(p => p.id === id)?.imageHint || `person`;
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -47,7 +57,13 @@ export default function AboutPage() {
             {developers.map((dev) => (
               <div key={dev.name} className="flex flex-col items-center gap-3">
                 <Avatar className="w-24 h-24 text-3xl">
-                  <AvatarImage src={`https://picsum.photos/seed/${dev.name.replace(' ', '')}/100/100`} data-ai-hint="person portrait" />
+                  <Image 
+                    src={getImageUrl(dev.imageId)} 
+                    alt={dev.name} 
+                    width={100} 
+                    height={100} 
+                    data-ai-hint={getImageHint(dev.imageId)} 
+                  />
                   <AvatarFallback>{dev.initials}</AvatarFallback>
                 </Avatar>
                 <span className="font-semibold text-lg">{dev.name}</span>

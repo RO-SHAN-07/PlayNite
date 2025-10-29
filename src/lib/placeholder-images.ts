@@ -1,6 +1,5 @@
-// This file is no longer needed as we are fetching image URLs from Firestore
-// or using hardcoded URLs for categories. It can be removed.
-// We will keep it for now to avoid breaking imports that haven't been updated yet.
+import placeholderData from './placeholder-images.json';
+
 export type ImagePlaceholder = {
   id: string;
   description: string;
@@ -8,4 +7,4 @@ export type ImagePlaceholder = {
   imageHint: string;
 };
 
-export const PlaceHolderImages: ImagePlaceholder[] = [];
+export const placeholderImages: ImagePlaceholder[] = placeholderData.placeholderImages;
