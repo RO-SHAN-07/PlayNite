@@ -17,10 +17,10 @@ import { toast } from '@/hooks/use-toast';
 import { VideoPlayer } from '@/components/video-player';
 
 export default function WatchPage({ params }: { params: { id: string } }) {
+  const { id: videoId } = params;
   const firestore = useFirestore();
   const { user } = useUser();
   const router = useRouter();
-  const videoId = params.id;
 
   const videoRef = useMemoFirebase(() => {
     if (!firestore) return null;
