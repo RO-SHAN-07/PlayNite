@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth, useUser, initiateEmailSignIn } from '@/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -21,17 +21,18 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
 
-  if(isUserLoading) {
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [isUserLoading, user, router]);
+
+  if(isUserLoading || user) {
     return (
         <div className="flex min-h-screen items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
     )
-  }
-
-  if(user) {
-    router.push('/');
-    return null;
   }
 
   const handleLogin = async (e: React.FormEvent) => {

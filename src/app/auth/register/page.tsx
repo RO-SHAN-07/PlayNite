@@ -8,7 +8,7 @@ import { useAuth, useFirestore, useUser, setDocumentNonBlocking } from '@/fireba
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
 import { doc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { UserProfile } from '@/lib/data';
@@ -26,17 +26,18 @@ export default function RegisterPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   
-  if(isUserLoading) {
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [isUserLoading, user, router]);
+
+  if(isUserLoading || user) {
     return (
         <div className="flex min-h-screen items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
     )
-  }
-
-  if(user) {
-    router.push('/');
-    return null;
   }
 
   const handleRegister = async (e: React.FormEvent) => {
