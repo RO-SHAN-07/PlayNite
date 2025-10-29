@@ -675,7 +675,7 @@
           ]
         }
       },
-       {
+      {
         "path": "/memories/{memoryId}",
         "definition": {
           "entityName": "Memory",
