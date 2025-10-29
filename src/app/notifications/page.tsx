@@ -2,14 +2,13 @@
 import { useUser, useFirestore } from '@/firebase';
 import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Bell, Loader2, MessageSquare, Video } from 'lucide-react';
 import { useEffect } from 'react';
 import type { Notification } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -56,7 +55,8 @@ export default function NotificationsPage() {
 
   const notificationsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, 'notifications'), where('userId', '==', user.uid), orderBy('timestamp', 'desc'));
+    // Query the subcollection under the user's document
+    return query(collection(firestore, `users/${user.uid}/notifications`), orderBy('timestamp', 'desc'));
   }, [user, firestore]);
 
   const { data: notifications, isLoading } = useCollection<Notification>(notificationsQuery);

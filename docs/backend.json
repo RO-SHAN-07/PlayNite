@@ -763,6 +763,26 @@
         }
       },
       {
+        "path": "/users/{userId}/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": {
+            "$ref": "#/backend/entities/Notification"
+          },
+          "description": "Stores notifications for a specific user. Only the user can read or list their own notifications.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "notificationId",
+              "description": "The unique identifier of the notification."
+            }
+          ]
+        }
+      },
+      {
         "path": "/videos/{videoId}",
         "definition": {
           "entityName": "Video",
@@ -906,25 +926,6 @@
             {
               "name": "moderationLogId",
               "description": "The unique identifier of the moderation log entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/notifications/{notificationId}",
-        "definition": {
-          "entityName": "Notification",
-          "schema": {
-            "$ref": "#/backend/entities/Notification"
-          },
-          "description": "Stores notifications for users. Listable and readable only by the recipient user.",
-          "rules": {
-            "list": "query.where('userId', '==', request.auth.uid)"
-          },
-          "params": [
-            {
-              "name": "notificationId",
-              "description": "The unique identifier for the notification."
             }
           ]
         }
