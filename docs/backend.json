@@ -329,42 +329,6 @@
         "watchPosition"
       ]
     },
-    "Memory": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Memory",
-      "type": "object",
-      "description": "Represents a user-saved video moment with a note.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the memory entity."
-        },
-        "videoId": {
-          "type": "string",
-          "description": "Reference to Video. (Relationship: Video 1:N Memory)"
-        },
-        "timestamp": {
-          "type": "number",
-          "description": "The specific time in the video (in seconds) that the memory refers to."
-        },
-        "note": {
-          "type": "string",
-          "description": "A personal note or comment about the saved moment."
-        },
-        "addedDate": {
-          "type": "string",
-          "description": "Date and time the memory was saved.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "videoId",
-        "timestamp",
-        "note",
-        "addedDate"
-      ]
-    },
     "ReportedVideo": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ReportedVideo",
@@ -666,26 +630,6 @@
             {
               "name": "playlistItemId",
               "description": "The unique identifier of the playlist item."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/memories/{memoryId}",
-        "definition": {
-          "entityName": "Memory",
-          "schema": {
-            "$ref": "#/backend/entities/Memory"
-          },
-          "description": "Stores a user's saved video moments (memories). Accessible only to the user who created it.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "memoryId",
-              "description": "The unique identifier of the memory item."
             }
           ]
         }

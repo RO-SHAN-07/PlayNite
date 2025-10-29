@@ -33,14 +33,6 @@ export interface VideoHistory {
   watchDate: Timestamp | FieldValue;
 }
 
-export interface Memory {
-  id: string;
-  videoId: string;
-  timestamp: number; // in seconds
-  note: string;
-  addedDate: Timestamp | FieldValue;
-}
-
 export interface Category {
   id: string;
   name: string;

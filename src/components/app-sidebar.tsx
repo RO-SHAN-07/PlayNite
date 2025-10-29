@@ -10,7 +10,6 @@ import {
   LogOut,
   LogIn,
   Video,
-  Banknote,
   Info,
 } from 'lucide-react';
 import {
@@ -64,11 +63,6 @@ const SIDEBAR_SECTIONS = [
         href: '/library/favorites',
         label: 'Favorites',
         icon: Star,
-      },
-      {
-        href: '/library/memory-bank',
-        label: 'Memory Bank',
-        icon: Banknote,
       },
     ],
   },
