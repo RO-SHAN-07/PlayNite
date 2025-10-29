@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
 import { type Video } from '@/lib/data';
 import { formatDistanceToNow } from 'date-fns';
-import { Star, ThumbsUp, ThumbsDown, Share2, Plus, Loader2, Play } from 'lucide-react';
-import Image from 'next/image';
+import { Star, ThumbsUp, ThumbsDown, Share2, Plus, Loader2 } from 'lucide-react';
 import { notFound, useRouter } from 'next/navigation';
 import { useFirestore, useUser } from '@/firebase';
 import { useDoc } from '@/firebase/firestore/use-doc';
@@ -15,6 +14,7 @@ import { useMemo, useEffect } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
+import { VideoPlayer } from '@/components/video-player';
 
 export default function WatchPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
@@ -120,17 +120,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     <div className="grid lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-6">
         <div className="aspect-video w-full rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
-          {video.thumbnailUrl ? (
-            <Image
-              src={video.thumbnailUrl}
-              alt={video.title}
-              width={1280}
-              height={720}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-             <Play className="h-24 w-24 text-muted-foreground" />
-          )}
+            <VideoPlayer src={video.videoUrl} poster={video.thumbnailUrl} />
         </div>
 
         <div className="space-y-4">
