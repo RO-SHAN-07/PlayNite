@@ -11,6 +11,7 @@ import {
   LogIn,
   Video,
   Banknote,
+  Info,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -232,6 +233,18 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
+                 <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/about'}
+                  tooltip={{ children: 'About' }}
+                >
+                  <Link href="/about">
+                    <Info />
+                    <span>About</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton onClick={handleLogout}>
                   <LogOut />
                   <span>Log Out</span>
@@ -240,6 +253,18 @@ export function AppSidebar() {
             </SidebarMenu>
           ) : (
             <SidebarMenu>
+               <SidebarMenuItem>
+                 <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/about'}
+                  tooltip={{ children: 'About' }}
+                >
+                  <Link href="/about">
+                    <Info />
+                    <span>About</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
                <SidebarMenuItem>
                  <SidebarMenuButton asChild>
                   <Link href="/auth/login">
