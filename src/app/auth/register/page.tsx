@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { useAuth, useFirestore, useUser, setDocumentNonBlocking } from '@/firebase';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
@@ -24,10 +24,19 @@ export default function RegisterPage() {
   const auth = useAuth();
   const firestore = useFirestore();
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
+  
+  if(isUserLoading) {
+    return (
+        <div className="flex min-h-screen items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    )
+  }
 
   if(user) {
     router.push('/');
+    return null;
   }
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -41,16 +50,17 @@ export default function RegisterPage() {
       await updateProfile(user, { displayName });
 
       const userDocRef = doc(firestore, 'users', user.uid);
-      const userProfile: Partial<UserProfile> = {
+      const userProfile: UserProfile = {
         uid: user.uid,
         email: user.email,
         displayName: displayName,
         photoURL: user.photoURL,
+        joined: serverTimestamp(),
       };
-      await setDoc(userDocRef, userProfile, { merge: true });
+      setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
 
       toast({ title: 'Registration Successful', description: 'Welcome to PlayNite!' });
-      router.push('/');
+      // onAuthStateChanged will handle the redirect
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Registration Failed', description: error.message });
     } finally {
@@ -67,16 +77,17 @@ export default function RegisterPage() {
       const user = result.user;
 
       const userDocRef = doc(firestore, 'users', user.uid);
-      const userProfile: Partial<UserProfile> = {
+      const userProfile: UserProfile = {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
+        joined: serverTimestamp(),
       };
-      await setDoc(userDocRef, userProfile, { merge: true });
+      setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
 
       toast({ title: 'Login Successful', description: 'Welcome!' });
-      router.push('/');
+      // onAuthStateChanged will handle redirect
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Google Login Failed', description: error.message });
     } finally {

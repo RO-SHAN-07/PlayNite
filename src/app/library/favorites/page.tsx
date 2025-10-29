@@ -1,32 +1,43 @@
 'use client';
 import { VideoCard } from '@/components/video-card';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, where } from 'firebase/firestore';
-import { Star } from 'lucide-react';
+import { Star, Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
-import type { Video } from '@/lib/data';
+import type { Video, Favorite } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from 'next/navigation';
 
 export default function FavoritesPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
 
-  const favoritesQuery = useMemo(() => {
+  const favoritesQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(collection(firestore, `users/${user.uid}/favorites`));
   }, [user, firestore]);
 
-  const { data: favorites, loading: favoritesLoading } = useCollection(favoritesQuery);
+  const { data: favorites, isLoading: favoritesLoading } = useCollection<Favorite>(favoritesQuery);
 
   const videoIds = useMemo(() => favorites?.map(f => f.videoId) || [], [favorites]);
 
-  const videosQuery = useMemo(() => {
+  const videosQuery = useMemoFirebase(() => {
     if (!firestore || videoIds.length === 0) return null;
     return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
   }, [firestore, videoIds]);
 
-  const { data: favoritedVideos, loading: videosLoading } = useCollection<Video>(videosQuery);
+  const { data: favoritedVideos, isLoading: videosLoading } = useCollection<Video>(videosQuery);
+
+  if (isUserLoading) {
+    return <div className="flex justify-center items-center h-96"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>;
+  }
+  
+  if(!user) {
+    router.push('/auth/login');
+    return null;
+  }
 
   const isLoading = favoritesLoading || videosLoading;
 

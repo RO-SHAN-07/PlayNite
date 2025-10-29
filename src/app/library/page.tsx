@@ -1,13 +1,14 @@
 'use client';
 import { VideoCard } from '@/components/video-card';
-import { History, Star, Upload } from 'lucide-react';
+import { History, Star, Upload, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useUser, useFirestore } from '@/firebase';
-import { collection, query, limit } from 'firebase/firestore';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, limit, orderBy } from 'firebase/firestore';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import type { Video } from '@/lib/data';
+import type { Video, Favorite, VideoHistory } from '@/lib/data';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from 'next/navigation';
 
 function VideoRowSkeleton() {
   return (
@@ -27,43 +28,54 @@ function VideoRowSkeleton() {
 
 
 export default function LibraryPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
 
-  const favoritesQuery = useMemo(() => {
+  const favoritesQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, `users/${user.uid}/favorites`), limit(5));
+    return query(collection(firestore, `users/${user.uid}/favorites`), orderBy('addedDate', 'desc'), limit(5));
   }, [user, firestore]);
   
-  const historyQuery = useMemo(() => {
+  const historyQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, `users/${user.uid}/history`), limit(5));
+    return query(collection(firestore, `users/${user.uid}/video_history`), orderBy('watchDate', 'desc'), limit(5));
   }, [user, firestore]);
   
-  const uploadsQuery = useMemo(() => {
+  const uploadsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(collection(firestore, 'videos'), where('creatorId', '==', user.uid), limit(5));
   }, [user, firestore]);
 
-  const { data: favorites, loading: favoritesLoading } = useCollection(favoritesQuery);
-  const { data: history, loading: historyLoading } = useCollection(historyQuery);
-  const { data: uploads, loading: uploadsLoading } = useCollection(uploadsQuery);
+  const { data: favorites, isLoading: favoritesLoading } = useCollection<Favorite>(favoritesQuery);
+  const { data: history, isLoading: historyLoading } = useCollection<VideoHistory>(historyQuery);
+  const { data: uploads, isLoading: uploadsLoading } = useCollection<Video>(uploadsQuery);
 
-  const { data: favoriteVideos, loading: favoriteVideosLoading } = useCollection<Video>(
-    useMemo(() => {
+  const { data: favoriteVideos, isLoading: favoriteVideosLoading } = useCollection<Video>(
+    useMemoFirebase(() => {
       if (!firestore || !favorites || favorites.length === 0) return null;
       const videoIds = favorites.map(f => f.videoId);
       return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
     }, [firestore, favorites])
   );
 
-  const { data: historyVideos, loading: historyVideosLoading } = useCollection<Video>(
-    useMemo(() => {
+  const { data: historyVideos, isLoading: historyVideosLoading } = useCollection<Video>(
+    useMemoFirebase(() => {
       if (!firestore || !history || history.length === 0) return null;
-      const videoIds = history.map(h => h.videoId);
+      const videoIds = history.map(h => h.videoId).filter((v, i, a) => a.indexOf(v) === i);
+      if(videoIds.length === 0) return null;
       return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
     }, [firestore, history])
   );
+
+  if (isUserLoading) {
+    return <div className="flex justify-center items-center h-96"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>;
+  }
+
+  if(!user) {
+    router.push('/auth/login');
+    return null;
+  }
 
   const isLoading = favoritesLoading || historyLoading || uploadsLoading || favoriteVideosLoading || historyVideosLoading;
 

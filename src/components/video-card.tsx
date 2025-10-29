@@ -7,10 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { PlayCircle } from 'lucide-react';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { doc, firestore } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import { useMemo } from 'react';
 import { Skeleton } from './ui/skeleton';
+import { UserProfile } from '@/lib/data';
 
 type VideoCardProps = {
   video: Video;
@@ -19,12 +20,12 @@ type VideoCardProps = {
 export function VideoCard({ video }: VideoCardProps) {
   const firestore = useFirestore();
 
-  const creatorRef = useMemo(() => {
+  const creatorRef = useMemoFirebase(() => {
     if (!firestore || !video.creatorId) return null;
     return doc(firestore, 'users', video.creatorId);
   }, [firestore, video.creatorId]);
 
-  const { data: creator, loading: creatorLoading } = useDoc(creatorRef);
+  const { data: creator, isLoading: creatorLoading } = useDoc<UserProfile>(creatorRef);
   
   const formattedViews = Intl.NumberFormat('en-US', {
     notation: 'compact',
@@ -61,7 +62,7 @@ export function VideoCard({ video }: VideoCardProps) {
              <Skeleton className="h-10 w-10 rounded-full" />
            ) : (
             <Avatar className="h-10 w-10">
-              {creator?.photoURL && <AvatarImage src={creator.photoURL} alt={creator.displayName} />}
+              {creator?.photoURL && <AvatarImage src={creator.photoURL} alt={creator.displayName || ''} />}
               <AvatarFallback>{creator?.displayName?.charAt(0) || 'U'}</AvatarFallback>
             </Avatar>
            )}

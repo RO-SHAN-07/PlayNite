@@ -1,45 +1,55 @@
 'use client';
 import { VideoCard } from '@/components/video-card';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, where, orderBy } from 'firebase/firestore';
-import { History } from 'lucide-react';
+import { History, Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
-import type { Video } from '@/lib/data';
+import type { Video, VideoHistory } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from 'next/navigation';
 
 export default function HistoryPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
 
-  const historyQuery = useMemo(() => {
+  const historyQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, `users/${user.uid}/history`), orderBy('watchedAt', 'desc'));
+    return query(collection(firestore, `users/${user.uid}/video_history`), orderBy('watchDate', 'desc'));
   }, [user, firestore]);
 
-  const { data: historyItems, loading: historyLoading } = useCollection(historyQuery);
+  const { data: historyItems, isLoading: historyLoading } = useCollection<VideoHistory>(historyQuery);
   
-  const videoIds = useMemo(() => historyItems?.map(h => h.videoId) || [], [historyItems]);
+  const videoIds = useMemo(() => historyItems?.map(h => h.videoId).filter((v, i, a) => a.indexOf(v) === i) || [], [historyItems]);
 
-  const videosQuery = useMemo(() => {
+  const videosQuery = useMemoFirebase(() => {
     if (!firestore || videoIds.length === 0) return null;
     return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
   }, [firestore, videoIds]);
 
-  const { data: historyVideos, loading: videosLoading } = useCollection<Video>(videosQuery);
+  const { data: historyVideos, isLoading: videosLoading } = useCollection<Video>(videosQuery);
   
-  // Create a map for quick video lookup
   const videoMap = useMemo(() => {
     if (!historyVideos) return new Map();
     return new Map(historyVideos.map(video => [video.id, video]));
   }, [historyVideos]);
 
-  // Order videos based on history watch time
   const orderedHistoryVideos = useMemo(() => {
     if (!historyItems || !videoMap) return [];
-    return historyItems.map(item => videoMap.get(item.videoId)).filter(Boolean) as Video[];
+    // Get unique video IDs from history, preserving order
+    const uniqueVideoIds = historyItems.map(item => item.videoId).filter((v, i, a) => a.indexOf(v) === i);
+    return uniqueVideoIds.map(id => videoMap.get(id)).filter(Boolean) as Video[];
   }, [historyItems, videoMap]);
 
+  if (isUserLoading) {
+    return <div className="flex justify-center items-center h-96"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>;
+  }
+
+  if(!user) {
+    router.push('/auth/login');
+    return null;
+  }
 
   const isLoading = historyLoading || videosLoading;
 

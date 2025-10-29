@@ -1,7 +1,7 @@
 'use client';
 import { TagCloud } from '@/components/tag-cloud';
 import { VideoCard } from '@/components/video-card';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { Video } from '@/lib/data';
 import { collection, query, limit } from 'firebase/firestore';
@@ -11,12 +11,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function ExplorePage() {
     const firestore = useFirestore();
 
-    const videosQuery = useMemo(() => {
+    const videosQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'videos'), limit(10));
     }, [firestore]);
 
-    const { data: videos, loading } = useCollection<Video>(videosQuery);
+    const { data: videos, isLoading: loading } = useCollection<Video>(videosQuery);
 
 
   return (

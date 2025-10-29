@@ -1,4 +1,4 @@
-import type { Timestamp } from "firebase/firestore";
+import type { Timestamp, FieldValue } from "firebase/firestore";
 
 export interface Video {
   id: string;
@@ -20,21 +20,17 @@ export interface UserProfile {
   displayName: string | null;
   photoURL: string | null;
   bio?: string;
-  joined?: Timestamp;
+  joined?: Timestamp | FieldValue;
 }
 
 export interface Favorite {
-  id: string;
   videoId: string;
-  userId: string;
-  favoritedAt: Timestamp;
+  addedDate: Timestamp | FieldValue;
 }
 
-export interface History {
-  id: string;
+export interface VideoHistory {
   videoId: string;
-  userId: string;
-  watchedAt: Timestamp;
+  watchDate: Timestamp | FieldValue;
 }
 
 export interface Category {

@@ -21,8 +21,8 @@ import { UploadCloud, Loader2, CheckCircle } from 'lucide-react';
 import { automatedVideoTagging } from '@/ai/flows/automated-video-tagging';
 import { Badge } from '@/components/ui/badge';
 import { summarizeVideo } from '@/ai/flows/video-summarization';
-import { useUser, useFirestore } from '@/firebase';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 const uploadFormSchema = z.object({
@@ -113,19 +113,20 @@ export default function UploadPage() {
     setIsUploading(true);
     // Simulate upload process & create Firestore entry
     try {
+      // In a real app, you would upload the file to Firebase Storage here and get the URL
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const videosCollection = collection(firestore, 'videos');
-      await addDoc(videosCollection, {
+      addDocumentNonBlocking(videosCollection, {
         title: data.title,
         description: data.description,
         tags: data.tags?.split(',').map(t => t.trim()).filter(Boolean) || [],
         creatorId: user.uid,
         creator: user.displayName || 'Anonymous',
-        views: 0,
-        duration: "0:00", // Placeholder
-        thumbnailUrl: "https://picsum.photos/seed/new-vid/400/225", // Placeholder
-        videoUrl: "", // Placeholder
+        views: Math.floor(Math.random() * 10000),
+        duration: "10:00", // Placeholder
+        thumbnailUrl: `https://picsum.photos/seed/${Math.random()}/400/225`, // Placeholder
+        videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', // Placeholder
         uploadedAt: serverTimestamp(),
         categoryId: 'new-upload', // Placeholder
       });

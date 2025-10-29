@@ -2,28 +2,39 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, where } from 'firebase/firestore';
 import type { Video } from '@/lib/data';
-import { MoreHorizontal, PlusCircle, VideoIcon, Database } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, VideoIcon, Database, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { seedDatabase } from '@/lib/seed';
 import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export default function StudioPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const [isSeeding, setIsSeeding] = useState(false);
+  const router = useRouter();
 
-  const userVideosQuery = useMemo(() => {
+  const userVideosQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(collection(firestore, 'videos'), where('creatorId', '==', user.uid));
   }, [user, firestore]);
 
-  const { data: userVideos, loading, refresh } = useCollection<Video>(userVideosQuery);
+  const { data: userVideos, isLoading: loading, refresh } = useCollection<Video>(userVideosQuery);
+
+  if (isUserLoading) {
+    return <div className="flex justify-center items-center h-96"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>;
+  }
+
+  if(!user) {
+    router.push('/auth/login');
+    return null;
+  }
 
   const handleSeed = async () => {
     if (!firestore) return;
@@ -34,7 +45,7 @@ export default function StudioPage() {
             title: "Database Seeded!",
             description: "20 sample videos have been added to your database."
         });
-        refresh(); // Refresh the video list
+        if(refresh) refresh();
     } catch(error: any) {
         toast({
             variant: "destructive",

@@ -25,11 +25,12 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { useUser, useAuth, useFirestore } from '@/firebase';
+import { useUser, useAuth, useFirestore, updateDocumentNonBlocking } from '@/firebase';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 const settingsFormSchema = z.object({
   displayName: z.string().min(2, 'Username must be at least 2 characters.'),
@@ -43,9 +44,10 @@ const settingsFormSchema = z.object({
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 
 export default function SettingsPage() {
-    const { user, loading: userLoading } = useUser();
+    const { user, isUserLoading } = useUser();
     const auth = useAuth();
     const firestore = useFirestore();
+    const router = useRouter();
 
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsFormSchema),
@@ -85,10 +87,10 @@ export default function SettingsPage() {
         }
         
         const userDocRef = doc(firestore, 'users', user.uid);
-        await setDoc(userDocRef, { displayName: data.displayName }, { merge: true });
+        updateDocumentNonBlocking(userDocRef, { displayName: data.displayName });
 
         // In a real app, you would also save other settings like language, notifications, etc.
-        // await setDoc(userDocRef, { preferences: { language: data.language, ... } }, { merge: true });
+        // updateDocumentNonBlocking(userDocRef, { preferences: { language: data.language, ... } });
 
         toast({
           title: 'Settings saved!',
@@ -104,12 +106,17 @@ export default function SettingsPage() {
     }
   }
 
-  if (userLoading) {
+  if (isUserLoading) {
       return (
         <div className="max-w-4xl mx-auto flex justify-center items-center h-96">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
         </div>
       )
+  }
+
+  if(!user) {
+    router.push('/auth/login');
+    return null;
   }
 
   return (

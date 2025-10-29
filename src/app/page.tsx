@@ -14,7 +14,7 @@ import { VideoCard } from '@/components/video-card';
 import { PlayCircle, Plus } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, limit, query } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -37,12 +37,12 @@ function VideoCardSkeleton() {
 export default function Home() {
   const firestore = useFirestore();
 
-  const videosQuery = useMemo(() => {
+  const videosQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'videos'), limit(16));
   }, [firestore]);
 
-  const { data: videos, loading } = useCollection<Video>(videosQuery);
+  const { data: videos, isLoading: loading } = useCollection<Video>(videosQuery);
 
   const featuredVideo = videos?.[0];
   const heroImage = {

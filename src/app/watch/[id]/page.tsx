@@ -7,7 +7,7 @@ import { type Video } from '@/lib/data';
 import { formatDistanceToNow } from 'date-fns';
 import { Star, ThumbsUp, ThumbsDown, Share2, Plus, Loader2 } from 'lucide-react';
 import { notFound, useRouter } from 'next/navigation';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { collection, doc, serverTimestamp, setDoc, deleteDoc, query, where, limit } from 'firebase/firestore';
 import { useMemo, useEffect } from 'react';
@@ -21,31 +21,31 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   const { user } = useUser();
   const router = useRouter();
 
-  const videoRef = useMemo(() => {
+  const videoRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return doc(firestore, 'videos', params.id);
   }, [firestore, params.id]);
-  const { data: video, loading: videoLoading } = useDoc<Video>(videoRef);
+  const { data: video, isLoading: videoLoading } = useDoc<Video>(videoRef);
 
-  const creatorRef = useMemo(() => {
+  const creatorRef = useMemoFirebase(() => {
     if (!firestore || !video?.creatorId) return null;
     return doc(firestore, 'users', video.creatorId);
   }, [firestore, video?.creatorId]);
-  const { data: creator, loading: creatorLoading } = useDoc(creatorRef);
+  const { data: creator, isLoading: creatorLoading } = useDoc(creatorRef);
   
-  const favoritesRef = useMemo(() => {
+  const favoritesRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return collection(firestore, `users/${user.uid}/favorites`);
   }, [firestore, user]);
-  const favoriteQuery = useMemo(() => {
+  const favoriteQuery = useMemoFirebase(() => {
     if (!favoritesRef) return null;
     return query(favoritesRef, where('videoId', '==', params.id), limit(1));
   }, [favoritesRef, params.id]);
 
-  const { data: favorite, loading: favoriteLoading } = useCollection(favoriteQuery);
+  const { data: favorite, isLoading: favoriteLoading } = useCollection(favoriteQuery);
   const isFavorited = favorite && favorite.length > 0;
 
-  const recommendedVideosQuery = useMemo(() => {
+  const recommendedVideosQuery = useMemoFirebase(() => {
     if (!firestore || !video) return null;
     return query(
       collection(firestore, 'videos'), 
@@ -53,16 +53,16 @@ export default function WatchPage({ params }: { params: { id: string } }) {
       limit(10)
     );
   }, [firestore, video]);
-  const { data: recommendedVideos, loading: recommendedVideosLoading } = useCollection<Video>(recommendedVideosQuery);
+  const { data: recommendedVideos, isLoading: recommendedVideosLoading } = useCollection<Video>(recommendedVideosQuery);
 
 
   // Add to history
   useEffect(() => {
     if (user && firestore && video) {
-      const historyRef = doc(firestore, `users/${user.uid}/history`, video.id);
-      setDoc(historyRef, {
+      const historyRef = doc(firestore, `users/${user.uid}/video_history`, video.id);
+      setDocumentNonBlocking(historyRef, {
         videoId: video.id,
-        watchedAt: serverTimestamp(),
+        watchDate: serverTimestamp(),
       }, { merge: true });
     }
   }, [user, firestore, video]);
@@ -81,13 +81,13 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     const favoriteRef = doc(firestore, `users/${user.uid}/favorites`, video.id);
 
     if (isFavorited) {
-        await deleteDoc(favoriteRef);
+        deleteDocumentNonBlocking(favoriteRef);
         toast({ title: 'Removed from favorites' });
     } else {
-        await setDoc(favoriteRef, {
+        setDocumentNonBlocking(favoriteRef, {
             videoId: video.id,
-            favoritedAt: serverTimestamp(),
-        });
+            addedDate: serverTimestamp(),
+        }, { merge: true });
         toast({ title: 'Added to favorites!' });
     }
   };

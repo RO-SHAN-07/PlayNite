@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, useUser } from '@/firebase';
-import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { useAuth, useUser, initiateEmailSignIn } from '@/firebase';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
@@ -19,10 +19,19 @@ export default function LoginPage() {
 
   const auth = useAuth();
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
+
+  if(isUserLoading) {
+    return (
+        <div className="flex min-h-screen items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    )
+  }
 
   if(user) {
     router.push('/');
+    return null;
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -30,12 +39,19 @@ export default function LoginPage() {
     if (!auth) return;
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "Login Successful", description: "Welcome back!" });
-      router.push('/');
+      initiateEmailSignIn(auth, email, password);
+      // Non-blocking, onAuthStateChanged will handle redirect
+      // We can optimistically navigate or wait. For now, let's show loading.
+      // After a timeout, if user is not redirected, show an error.
+      setTimeout(() => {
+        if(!auth.currentUser) {
+          toast({ variant: 'destructive', title: 'Login Failed', description: "Invalid credentials or network issue." });
+          setLoading(false);
+        }
+      }, 5000)
+
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
-    } finally {
       setLoading(false);
     }
   };
@@ -46,8 +62,8 @@ export default function LoginPage() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle the redirect.
       toast({ title: 'Login Successful', description: 'Welcome!' });
-      router.push('/');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Google Login Failed', description: error.message });
     } finally {
