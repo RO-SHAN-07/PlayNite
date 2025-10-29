@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart } from 'lucide-react';
+import { Heart, Mail } from 'lucide-react';
 
 const developers = [
   { name: 'Roshan Sahu', initials: 'RS' },
@@ -12,9 +12,27 @@ const developers = [
 
 export default function AboutPage() {
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="space-y-2 mb-8 text-center">
-        <h1 className="text-4xl font-bold font-headline">About PlayNite</h1>
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="flex flex-col items-center justify-center space-y-4 text-center">
+         <div className="flex items-center gap-3">
+            <div className="bg-primary p-3 rounded-2xl">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-primary-foreground"
+                >
+                    <path d="M7 4v16l13-8L7 4z"></path>
+                </svg>
+            </div>
+            <h1 className="text-5xl font-bold font-headline">PlayNite</h1>
+        </div>
         <p className="text-lg text-muted-foreground">
           A modern video streaming platform built with passion.
         </p>
@@ -40,6 +58,19 @@ export default function AboutPage() {
              <Heart className="w-5 h-5 mr-2 text-primary" />
              <span>Crafted with love and code</span>
           </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="bg-card/50 backdrop-blur-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl font-headline text-center">Support</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center">
+            <p className="text-muted-foreground mb-4">For bug reports, support, or feedback, please contact us at:</p>
+            <a href="mailto:roshan8800jp@gmail.com" className="flex items-center justify-center gap-2 text-primary hover:underline">
+                <Mail className="w-5 h-5" />
+                roshan8800jp@gmail.com
+            </a>
         </CardContent>
       </Card>
     </div>
