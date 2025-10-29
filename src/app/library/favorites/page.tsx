@@ -3,7 +3,7 @@ import { VideoCard } from '@/components/video-card';
 import { useUser, useFirestore } from '@/firebase';
 import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Star, Loader2, HeartCrack } from 'lucide-react';
 import { useMemo, useEffect } from 'react';
 import type { Video, Favorite } from '@/lib/data';
@@ -25,20 +25,27 @@ export default function FavoritesPage() {
 
   const favoritesQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, `users/${user.uid}/favorites`));
+    return query(collection(firestore, `users/${user.uid}/favorites`), orderBy('addedDate', 'desc'));
   }, [user, firestore]);
 
   const { data: favorites, isLoading: favoritesLoading } = useCollection<Favorite>(favoritesQuery);
 
-  const videoIds = useMemo(() => favorites?.map(f => f.videoId) || [], [favorites]);
+  const videoIds = useMemo(() => favorites?.map(f => f.videoId).filter(Boolean) || [], [favorites]);
 
   const videosQuery = useMemoFirebase(() => {
     // Prevent invalid query with empty 'in' array
-    if (!firestore || !videoIds || videoIds.length === 0) return null;
+    if (!firestore || videoIds.length === 0) return null;
     return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
   }, [firestore, videoIds]);
 
   const { data: favoritedVideos, isLoading: videosLoading } = useCollection<Video>(videosQuery);
+  
+  const orderedFavoritedVideos = useMemo(() => {
+      if (!favoritedVideos || !favorites) return [];
+      const videoMap = new Map(favoritedVideos.map(v => [v.id, v]));
+      return favorites.map(f => videoMap.get(f.videoId)).filter(Boolean) as Video[];
+  }, [favoritedVideos, favorites]);
+
 
   if (isUserLoading || (!user && !isUserLoading)) {
     return (
@@ -74,8 +81,8 @@ export default function FavoritesPage() {
                     </div>
                 </div>
             ))
-          ) : favoritedVideos && favoritedVideos.length > 0 ? (
-            favoritedVideos.map((video) => (
+          ) : orderedFavoritedVideos && orderedFavoritedVideos.length > 0 ? (
+            orderedFavoritedVideos.map((video) => (
               <VideoCard key={video.id} video={video} />
             ))
           ) : (

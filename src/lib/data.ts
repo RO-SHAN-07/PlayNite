@@ -29,6 +29,7 @@ export interface UserProfile {
   bio?: string;
   joined?: Timestamp | FieldValue;
   preferences?: UserPreferences;
+  watchLater?: string[];
 }
 
 export interface Favorite {
@@ -36,9 +37,16 @@ export interface Favorite {
   addedDate: Timestamp | FieldValue;
 }
 
+export interface WatchLater {
+    videoId: string;
+    addedDate: Timestamp | FieldValue;
+}
+
 export interface VideoHistory {
   videoId: string;
   watchDate: Timestamp | FieldValue;
+  title: string;
+  thumbnailUrl: string;
 }
 
 export interface Category {

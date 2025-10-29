@@ -40,7 +40,7 @@ export default function LoginPage() {
     if (!auth) return;
     setLoading(true);
     try {
-      initiateEmailSignIn(auth, email, password);
+      await initiateEmailSignIn(auth, email, password);
       // Non-blocking, onAuthStateChanged will handle redirect
       // We can optimistically navigate or wait. For now, let's show loading.
       // After a timeout, if user is not redirected, show an error.
@@ -88,7 +88,7 @@ export default function LoginPage() {
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <Link href="#" className="ml-auto inline-block text-sm underline">
+                <Link href="/auth/forgot-password" className="ml-auto inline-block text-sm underline">
                   Forgot your password?
                 </Link>
               </div>

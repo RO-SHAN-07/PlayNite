@@ -231,37 +231,6 @@
         "timestamp"
       ]
     },
-    "WatchLater": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "WatchLater",
-      "type": "object",
-      "description": "Represents a video added to a user's 'watch later' list.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the watch later entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N WatchLater)"
-        },
-        "videoId": {
-          "type": "string",
-          "description": "Reference to Video. (Relationship: Video 1:N WatchLater)"
-        },
-        "addedDate": {
-          "type": "string",
-          "description": "Date and time the video was added to the 'watch later' list.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "videoId",
-        "addedDate"
-      ]
-    },
     "Favorite": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Favorite",
@@ -640,26 +609,6 @@
             {
               "name": "userId",
               "description": "The unique identifier of the user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/watch_later/{watchLaterId}",
-        "definition": {
-          "entityName": "WatchLater",
-          "schema": {
-            "$ref": "#/backend/entities/WatchLater"
-          },
-          "description": "Stores videos in a user's 'watch later' list. Accessible only to the user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "watchLaterId",
-              "description": "The unique identifier of the watch later item."
             }
           ]
         }

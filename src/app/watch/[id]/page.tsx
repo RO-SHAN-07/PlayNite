@@ -105,7 +105,7 @@ function CommentsSection({ videoId }: { videoId: string }) {
                             size="icon" 
                             className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
                             onClick={handlePostComment}
-                            disabled={isPosting}
+                            disabled={isPosting || !commentText.trim()}
                         >
                             {isPosting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4"/>}
                         </Button>
@@ -146,28 +146,31 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   const { data: creator, isLoading: creatorLoading } = useDoc<UserProfile>(creatorRef);
   
   const favoriteQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
+    if (!firestore || !user || !videoId) return null;
     return query(collection(firestore, `users/${user.uid}/favorites`), where('videoId', '==', videoId), limit(1));
   }, [firestore, user, videoId]);
 
   const { data: favorite, isLoading: favoriteLoading } = useCollection(favoriteQuery);
   const isFavoritedInitially = useMemo(() => favorite && favorite.length > 0, [favorite]);
+  const [isFavoriting, setIsFavoriting] = useState(false);
 
   const [isFavorited, setIsFavorited] = useState(isFavoritedInitially);
 
   const likesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !videoId) return null;
     return collection(firestore, 'videos', videoId, 'likes');
     }, [firestore, videoId]);
 
     const { data: likes, isLoading: likesLoading } = useCollection<VideoLike>(likesQuery);
 
     const userLikeQuery = useMemoFirebase(() => {
-        if (!firestore || !user) return null;
+        if (!firestore || !user || !videoId) return null;
         return doc(firestore, 'videos', videoId, 'likes', user.uid);
     }, [firestore, videoId, user]);
     
     const { data: userLike, isLoading: userLikeLoading } = useDoc<VideoLike>(userLikeQuery);
+    const [isLiking, setIsLiking] = useState(false);
+
 
     const likeCount = useMemo(() => likes?.filter(l => l.type === 'like').length || 0, [likes]);
     const dislikeCount = useMemo(() => likes?.filter(l => l.type === 'dislike').length || 0, [likes]);
@@ -194,6 +197,8 @@ export default function WatchPage({ params }: { params: { id: string } }) {
       setDocumentNonBlocking(historyRef, {
         videoId: video.id,
         watchDate: serverTimestamp(),
+        title: video.title,
+        thumbnailUrl: video.thumbnailUrl,
       }, { merge: true });
     }
   }, [user, firestore, video]);
@@ -211,24 +216,26 @@ export default function WatchPage({ params }: { params: { id: string } }) {
         return;
     }
 
+    setIsFavoriting(true);
     const favoriteRef = doc(firestore, `users/${user.uid}/favorites`, video.id);
-    const previousState = isFavorited;
-    setIsFavorited(!previousState);
-
+    
     try {
-      if (previousState) {
-          deleteDocumentNonBlocking(favoriteRef);
+      if (isFavorited) {
+          await deleteDocumentNonBlocking(favoriteRef);
           toast({ title: 'Removed from favorites' });
+          setIsFavorited(false);
       } else {
-          setDocumentNonBlocking(favoriteRef, {
+          await setDocumentNonBlocking(favoriteRef, {
               videoId: video.id,
               addedDate: serverTimestamp(),
-          }, { merge: true });
+          });
           toast({ title: 'Added to favorites!' });
+          setIsFavorited(true);
       }
     } catch (error) {
-      setIsFavorited(previousState);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update favorites.' });
+    } finally {
+        setIsFavoriting(false);
     }
   };
 
@@ -238,14 +245,24 @@ export default function WatchPage({ params }: { params: { id: string } }) {
         router.push('/auth/login');
         return;
     }
+    setIsLiking(true);
     const likeRef = doc(firestore, `videos/${video.id}/likes/${user.uid}`);
-    if (userLike && userLike.type === type) {
-        // User is toggling off their existing reaction
-        deleteDocumentNonBlocking(likeRef);
-    } else {
-        // User is adding a new reaction or changing their reaction
-        setDocumentNonBlocking(likeRef, { type }, { merge: true });
+    try {
+        if (userLike && userLike.type === type) {
+            await deleteDocumentNonBlocking(likeRef);
+        } else {
+            await setDocumentNonBlocking(likeRef, { type });
+        }
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not save reaction.' });
+    } finally {
+        setIsLiking(false);
     }
+  }
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast({ title: 'Link Copied!', description: 'Video link copied to your clipboard.' });
   }
 
 
@@ -314,18 +331,18 @@ export default function WatchPage({ params }: { params: { id: string } }) {
             </div>
 
             <div className="flex items-center gap-1 flex-wrap">
-              <Button variant="ghost" onClick={() => handleLike('like')} className={userLike?.type === 'like' ? 'text-primary' : ''}>
+              <Button variant="ghost" onClick={() => handleLike('like')} className={userLike?.type === 'like' ? 'text-primary' : ''} disabled={isLiking}>
                 <ThumbsUp className="mr-2" /> 
                 {likeCount}
               </Button>
-              <Button variant="ghost" onClick={() => handleLike('dislike')} className={userLike?.type === 'dislike' ? 'text-primary' : ''}>
+              <Button variant="ghost" onClick={() => handleLike('dislike')} className={userLike?.type === 'dislike' ? 'text-primary' : ''} disabled={isLiking}>
                 <ThumbsDown />
               </Button>
-               <Button variant="ghost">
+               <Button variant="ghost" onClick={handleShare}>
                 <Share2 className="mr-2" /> Share
               </Button>
-               <Button variant="ghost" className={isFavorited ? "text-amber-400 hover:text-amber-500" : ""} onClick={handleFavorite} disabled={favoriteLoading}>
-                {favoriteLoading ? <Loader2 className="animate-spin mr-2"/> : <Star className="mr-2" />}
+               <Button variant="ghost" className={isFavorited ? "text-amber-400 hover:text-amber-500" : ""} onClick={handleFavorite} disabled={isFavoriting || favoriteLoading}>
+                {isFavoriting || favoriteLoading ? <Loader2 className="animate-spin mr-2"/> : <Star className="mr-2" />}
                 {isFavorited ? 'Favorited' : 'Favorite'}
               </Button>
             </div>

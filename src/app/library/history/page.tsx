@@ -34,7 +34,7 @@ export default function HistoryPage() {
 
   const videosQuery = useMemoFirebase(() => {
     // Prevent invalid query with empty 'in' array
-    if (!firestore || !videoIds || videoIds.length === 0) return null;
+    if (!firestore || videoIds.length === 0) return null;
     return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
   }, [firestore, videoIds]);
 

@@ -11,12 +11,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { categories, type Video } from '@/lib/data';
 import { VideoCard } from '@/components/video-card';
-import { PlayCircle, Plus } from 'lucide-react';
+import { PlayCircle, Plus, Loader2 } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, limit, query, orderBy } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { collection, limit, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
+import { useFirestore, useUser, setDocumentNonBlocking } from '@/firebase';
 import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/hooks/use-toast';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 function VideoRowSkeleton({ count = 5 }: { count?: number }) {
     return (
@@ -37,6 +40,10 @@ function VideoRowSkeleton({ count = 5 }: { count?: number }) {
 
 export default function Home() {
   const firestore = useFirestore();
+  const { user } = useUser();
+  const router = useRouter();
+
+  const [isAdding, setIsAdding] = useState(false);
 
   const videosQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -50,6 +57,28 @@ export default function Home() {
     imageUrl: 'https://images.unsplash.com/photo-1754346724171-ddd61d8dd8da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxhYnN0cmFjdCUyMGNpbmVtYXRpY3xlbnwwfHx8fDE3NjE3MjYxODN8MA&ixlib=rb-4.1.0&q=80&w=1080',
     imageHint: 'abstract cinematic'
   };
+
+  const handleAddToWatchLater = async () => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Please log in', description: 'You need to be logged in to add videos to your list.' });
+      router.push('/auth/login');
+      return;
+    }
+    if (!firestore || !featuredVideo) return;
+    setIsAdding(true);
+    try {
+        const watchLaterRef = doc(firestore, `users/${user.uid}/watchLater`, featuredVideo.id);
+        await setDocumentNonBlocking(watchLaterRef, {
+            videoId: featuredVideo.id,
+            addedDate: serverTimestamp(),
+        });
+        toast({ title: 'Added to Watch Later', description: `"${featuredVideo.title}" has been added to your list.` });
+    } catch(error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not add to Watch Later.' });
+    } finally {
+        setIsAdding(false);
+    }
+  }
 
 
   return (
@@ -81,8 +110,14 @@ export default function Home() {
                     Play Now
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm text-white border-white/20 hover:bg-white/20">
-                  <Plus className="mr-2" />
+                <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="bg-white/10 backdrop-blur-sm text-white border-white/20 hover:bg-white/20"
+                    onClick={handleAddToWatchLater}
+                    disabled={isAdding}
+                >
+                  {isAdding ? <Loader2 className="mr-2 animate-spin"/> : <Plus className="mr-2" />}
                   Add to List
                 </Button>
               </div>
