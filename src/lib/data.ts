@@ -1,0 +1,206 @@
+export interface Video {
+  id: string;
+  title: string;
+  description: string;
+  creator: string;
+  duration: string;
+  thumbnailId: string;
+  views: number;
+  uploadedAt: string;
+  categoryId: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  imageUrl: string;
+  imageHint: string;
+}
+
+export const categories: Category[] = [
+  { id: 'action', name: 'Action', imageUrl: 'https://picsum.photos/seed/cat-action/400/225', imageHint: 'action explosion' },
+  { id: 'comedy', name: 'Comedy', imageUrl: 'https://picsum.photos/seed/cat-comedy/400/225', imageHint: 'funny laugh' },
+  { id: 'sci-fi', name: 'Sci-Fi', imageUrl: 'https://picsum.photos/seed/cat-sci-fi/400/225', imageHint: 'futuristic spaceship' },
+  { id: 'documentary', name: 'Documentary', imageUrl: 'https://picsum.photos/seed/cat-documentary/400/225', imageHint: 'historical archive' },
+  { id: 'animation', name: 'Animation', imageUrl: 'https://picsum.photos/seed/cat-animation/400/225', imageHint: 'cartoon style' },
+  { id: 'horror', name: 'Horror', imageUrl: 'https://picsum.photos/seed/cat-horror/400/225', imageHint: 'scary monster' },
+];
+
+export const videos: Video[] = [
+  {
+    id: '1',
+    title: 'Cybernetic Horizon: A Neon Dystopia',
+    description: 'Explore the shimmering but dangerous world of Neo-Kyoto in 2077. A lone cyborg fights against a corrupt corporation to uncover a hidden truth.',
+    creator: 'FutureFrames',
+    duration: '1:45:22',
+    thumbnailId: 'video-1',
+    views: 1250345,
+    uploadedAt: '2024-05-01T12:00:00Z',
+    categoryId: 'sci-fi',
+  },
+  {
+    id: '2',
+    title: 'The Last Stand at Crimson Peak',
+    description: 'A small group of soldiers must defend a crucial mountain pass against overwhelming odds in this intense action-packed thriller.',
+    creator: 'Action Central',
+    duration: '2:10:05',
+    thumbnailId: 'video-2',
+    views: 3450678,
+    uploadedAt: '2024-04-15T18:30:00Z',
+    categoryId: 'action',
+  },
+  {
+    id: '3',
+    title: 'Laugh Riot: A Stand-Up Special',
+    description: 'Comedian Alex Ray brings the house down with hilarious observations on modern life, technology, and everything in between.',
+    creator: 'Comedy Club',
+    duration: '58:30',
+    thumbnailId: 'video-3',
+    views: 890123,
+    uploadedAt: '2024-05-10T20:00:00Z',
+    categoryId: 'comedy',
+  },
+  {
+    id: '4',
+    title: 'Secrets of the Deep: The Mariana Trench',
+    description: 'A breathtaking journey to the deepest part of the ocean, revealing bizarre creatures and otherworldly landscapes that have never been seen before.',
+    creator: 'DocuWorld',
+    duration: '45:15',
+    thumbnailId: 'video-4',
+    views: 2100456,
+    uploadedAt: '2024-03-20T10:45:00Z',
+    categoryId: 'documentary',
+  },
+  {
+    id: '5',
+    title: 'The Whispering Woods: An Animated Tale',
+    description: 'A young girl befriends a magical creature in an enchanted forest and must protect it from those who wish to exploit its power.',
+    creator: 'Animagic Studios',
+    duration: '1:25:40',
+    thumbnailId: 'video-5',
+    views: 1500890,
+    uploadedAt: '2024-04-22T14:00:00Z',
+    categoryId: 'animation',
+  },
+  {
+    id: '6',
+    title: 'Echoes of the Past',
+    description: 'A historian uncovers a mysterious artifact that sends her back in time, forcing her to navigate a dangerous past to save the future.',
+    creator: 'History Uncovered',
+    duration: '1:55:10',
+    thumbnailId: 'video-6',
+    views: 980321,
+    uploadedAt: '2024-02-10T09:00:00Z',
+    categoryId: 'sci-fi',
+  },
+  {
+    id: '7',
+    title: 'Zero Gravity: The Heist',
+    description: 'A team of elite thieves attempts the impossible: robbing a casino on a space station. The ultimate zero-gravity action movie.',
+    creator: 'Action Central',
+    duration: '2:05:00',
+    thumbnailId: 'video-7',
+    views: 4200100,
+    uploadedAt: '2024-05-18T21:00:00Z',
+    categoryId: 'action',
+  },
+  {
+    id: '8',
+    title: 'The Art of the Prank',
+    description: 'A documentary following the world\'s most notorious prankster as he prepares for his most elaborate and hilarious stunt yet.',
+    creator: 'DocuWorld',
+    duration: '1:10:20',
+    thumbnailId: 'video-8',
+    views: 750600,
+    uploadedAt: '2024-01-30T15:00:00Z',
+    categoryId: 'documentary',
+  },
+  {
+    id: '9',
+    title: 'Cosmic Wanderers',
+    description: 'The animated adventures of two alien friends exploring the galaxy, getting into trouble, and learning about different cultures.',
+    creator: 'Animagic Studios',
+    duration: '22:00',
+    thumbnailId: 'video-9',
+    views: 550400,
+    uploadedAt: '2024-05-05T11:00:00Z',
+    categoryId: 'animation',
+  },
+  {
+    id: '10',
+    title: 'Mister Jiggles and the Case of the Missing Peanut',
+    description: 'The funniest detective in town, a squirrel with a mustache, solves his toughest case yet. A laugh-a-minute comedy for all ages.',
+    creator: 'Comedy Club',
+    duration: '1:30:00',
+    thumbnailId: 'video-10',
+    views: 1100200,
+    uploadedAt: '2024-04-01T12:00:00Z',
+    categoryId: 'comedy',
+  },
+  {
+    id: '11',
+    title: 'Surviving the Elements: Arctic Challenge',
+    description: 'A survival expert takes on the harsh conditions of the Arctic with minimal gear. A gripping tale of human endurance.',
+    creator: 'Adventure Fuel',
+    duration: '55:12',
+    thumbnailId: 'video-11',
+    views: 1800999,
+    uploadedAt: '2024-03-05T19:00:00Z',
+    categoryId: 'documentary',
+  },
+  {
+    id: '12',
+    title: 'Project Chimera',
+    description: 'In a secret lab, a genetic experiment goes horribly wrong, and the scientists must fight for their lives against their own creation.',
+    creator: 'FutureFrames',
+    duration: '1:48:33',
+    thumbnailId: 'video-12',
+    views: 2300450,
+    uploadedAt: '2024-02-28T22:00:00Z',
+    categoryId: 'sci-fi',
+  },
+  {
+    id: '13',
+    title: 'Dust Devil',
+    description: 'A lone rider in a post-apocalyptic wasteland hunts down the gang that wronged him. High-octane chases and explosive action.',
+    creator: 'Action Central',
+    duration: '1:40:00',
+    thumbnailId: 'video-13',
+    views: 3100700,
+    uploadedAt: '2023-12-15T16:00:00Z',
+    categoryId: 'action',
+  },
+  {
+    id: '14',
+    title: 'The Quirky Quartet',
+    description: 'Four misfit office workers accidentally become spies and must bumble their way through an international conspiracy. A hilarious spy-comedy.',
+    creator: 'Comedy Club',
+    duration: '1:50:18',
+    thumbnailId: 'video-14',
+    views: 1400300,
+    uploadedAt: '2024-01-05T13:00:00Z',
+    categoryId: 'comedy',
+  },
+  {
+    id: '15',
+    title: 'The Star Weavers',
+    description: 'A beautifully animated story about a civilization that weaves constellations into existence. But when the stars start to fade, a young weaver must journey to save them.',
+    creator: 'Animagic Studios',
+    duration: '1:35:00',
+    thumbnailId: 'video-15',
+    views: 1950600,
+    uploadedAt: '2023-11-20T17:00:00Z',
+    categoryId: 'animation',
+  },
+  {
+    id: '16',
+    title: 'Planet Earth: The Next Chapter',
+    description: 'A stunning look at how climate change is reshaping our planet and the innovative solutions being developed to combat it.',
+    creator: 'DocuWorld',
+    duration: '2:15:00',
+    thumbnailId: 'video-16',
+    views: 4500000,
+    uploadedAt: '2024-04-22T00:00:00Z',
+    categoryId: 'documentary',
+  },
+];
