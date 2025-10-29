@@ -106,15 +106,16 @@ export function AppSidebar() {
             <SidebarMenu>
               {section.items.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <Link href={item.href} passHref>
-                    <SidebarMenuButton
-                      isActive={pathname === item.href}
-                      tooltip={{ children: item.label }}
-                    >
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={{ children: item.label }}
+                  >
+                    <Link href={item.href}>
                       <item.icon />
                       <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </Link>
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -128,48 +129,50 @@ export function AppSidebar() {
           {isSignedIn ? (
             <SidebarMenu>
               <SidebarMenuItem>
-                <Link href="/account" passHref>
-                  <SidebarMenuButton
-                    isActive={pathname === '/account'}
-                    tooltip={{ children: 'Account' }}
-                  >
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/account'}
+                  tooltip={{ children: 'Account' }}
+                >
+                  <Link href="/account">
                     <Avatar className="h-6 w-6">
                       {avatarImage && <AvatarImage src={avatarImage.imageUrl} data-ai-hint={avatarImage.imageHint} />}
                       <AvatarFallback>PN</AvatarFallback>
                     </Avatar>
                     <span>Jane Doe</span>
-                  </SidebarMenuButton>
-                </Link>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <Link href="/settings" passHref>
-                  <SidebarMenuButton
-                    isActive={pathname === '/settings'}
-                    tooltip={{ children: 'Settings' }}
-                  >
+                 <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/settings'}
+                  tooltip={{ children: 'Settings' }}
+                >
+                  <Link href="/settings">
                     <Settings />
                     <span>Settings</span>
-                  </SidebarMenuButton>
-                </Link>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <Link href="/auth/login" passHref>
-                  <SidebarMenuButton>
+                <SidebarMenuButton asChild>
+                  <Link href="/auth/login">
                     <LogOut />
                     <span>Log Out</span>
-                  </SidebarMenuButton>
-                </Link>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           ) : (
             <SidebarMenu>
                <SidebarMenuItem>
-                <Link href="/auth/login" passHref>
-                  <SidebarMenuButton>
+                 <SidebarMenuButton asChild>
+                  <Link href="/auth/login">
                     <LogIn />
                     <span>Log In</span>
-                  </SidebarMenuButton>
-                </Link>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           )}
