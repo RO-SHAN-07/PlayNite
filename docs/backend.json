@@ -281,8 +281,7 @@
           "description": "Reference to Video. (Relationship: Video 1:N Favorite)"
         },
         "addedDate": {
-          "type": "string",
-          "description": "Date and time the video was added to the favorites list.",
+          "type": "string",          "description": "Date and time the video was added to the favorites list.",
           "format": "date-time"
         }
       },
@@ -566,6 +565,45 @@
         "followedId",
         "timestamp"
       ]
+    },
+    "Notification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a notification for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the notification."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user receiving the notification."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of notification (e.g., 'new_follower', 'new_comment', 'new_video').",
+          "enum": ["new_follower", "new_comment", "new_video"]
+        },
+        "text": {
+          "type": "string",
+          "description": "The content of the notification message."
+        },
+        "relatedId": {
+          "type": "string",
+          "description": "ID of the related entity (e.g., follower's userId, videoId, commentId)."
+        },
+        "isRead": {
+          "type": "boolean",
+          "description": "Whether the notification has been read by the user."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Date and time the notification was created.",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "userId", "type", "text", "isRead", "timestamp"]
     }
   },
   "auth": {
@@ -647,7 +685,7 @@
             },
             {
               "name": "videoHistoryId",
-              "description": "The unique identifier of the video history item."
+              "description": "The unique identifier of a video history item."
             }
           ]
         }
@@ -712,6 +750,26 @@
             {
               "name": "followerId",
               "description": "The user ID of the user who is following."
+            }
+          ]
+        }
+      },
+       {
+        "path": "/users/{userId}/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": {
+            "$ref": "#/backend/entities/Notification"
+          },
+          "description": "Stores notifications for a specific user. Accessible only by that user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "notificationId",
+              "description": "The unique identifier of the notification."
             }
           ]
         }
