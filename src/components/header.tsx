@@ -49,6 +49,12 @@ export function Header() {
           <Skeleton className="h-8 w-8 rounded-full" />
         ) : user ? (
           <>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/notifications">
+                <Bell className="h-5 w-5" />
+                <span className="sr-only">Notifications</span>
+              </Link>
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">

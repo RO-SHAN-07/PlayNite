@@ -56,6 +56,18 @@ export interface Comment {
   timestamp: Timestamp;
 }
 
+export interface Notification {
+  id: string;
+  message: string;
+  read: boolean;
+  createdAt: Timestamp;
+  from?: {
+    name: string;
+    photoURL?: string;
+  },
+  link?: string;
+}
+
 export const categories: Category[] = [
   { id: 'action', name: 'Action', imageUrl: 'https://picsum.photos/seed/cat-action/400/225', imageHint: 'action explosion' },
   { id: 'comedy', name: 'Comedy', imageUrl: 'https://picsum.photos/seed/cat-comedy/400/225', imageHint: 'funny laugh' },

@@ -565,6 +565,45 @@
         "followedId",
         "timestamp"
       ]
+    },
+    "Notification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a notification for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the notification."
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the notification message."
+        },
+        "read": {
+          "type": "boolean",
+          "description": "Whether the notification has been read."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Date and time the notification was created.",
+          "format": "date-time"
+        },
+        "from": {
+          "type": "object",
+          "description": "Information about the sender of the notification.",
+          "properties": {
+            "name": { "type": "string" },
+            "photoURL": { "type": "string", "format": "uri" }
+          }
+        },
+        "link": {
+          "type": "string",
+          "description": "A URL link related to the notification.",
+          "format": "uri"
+        }
+      },
+      "required": ["id", "message", "read", "createdAt"]
     }
   },
   "auth": {
@@ -711,6 +750,26 @@
             {
               "name": "followerId",
               "description": "The user ID of the user who is following."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": {
+            "$ref": "#/backend/entities/Notification"
+          },
+          "description": "Stores notifications for a user. Accessible only by the owning user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "notificationId",
+              "description": "The unique identifier of the notification."
             }
           ]
         }
