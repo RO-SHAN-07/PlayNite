@@ -11,7 +11,7 @@ import {
 const sampleVideoUrl = 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
 // Embedded video URL for adult content
-const embeddedVideoUrl = 'https://www.pornhub.com/view_video.php?viewkey=0ef399b63a72d0e4ab57';
+const embeddedVideoUrl = 'https://www.pornhub.com/embed/0ef399b63a72d0e4ab57';
 
 const videosToSeed = [
     {

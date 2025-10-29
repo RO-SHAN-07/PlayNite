@@ -237,11 +237,11 @@ export function VideoEmbed({
       {/* Video iframe */}
       <iframe
         ref={iframeRef}
-        src={videoUrl}
+        src={videoUrl.replace('view_video.php?viewkey=', 'embed/')}
         className={cn(
           'w-full h-full',
-          showThumbnail && 'opacity-0 pointer-events-none',
-          !showThumbnail && 'opacity-100 pointer-events-auto'
+          (showThumbnail || isLoading) && 'opacity-0 pointer-events-none',
+          !showThumbnail && !isLoading && 'opacity-100 pointer-events-auto'
         )}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
@@ -290,9 +290,9 @@ export function VideoEmbed({
       )}
 
       {/* Metadata overlay */}
-      {showMetadata && (title || duration || views) && (
-        <div className="absolute top-4 left-4 right-4">
-          <div className="bg-black/80 rounded-lg p-3 text-white">
+      {showMetadata && (title || duration || views) && !showThumbnail && (
+        <div className="absolute top-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <div className="bg-black/60 rounded-lg p-3 text-white max-w-md">
             {title && (
               <h3 className="font-semibold text-sm mb-1 line-clamp-2">{title}</h3>
             )}
