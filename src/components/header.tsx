@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Menu, User, Settings, LogOut } from 'lucide-react';
+import { Menu, User, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { SearchInput } from './search-input';
@@ -45,12 +45,6 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/notifications">
-            <Bell className="h-5 w-5" />
-            <span className="sr-only">Notifications</span>
-          </Link>
-        </Button>
         {isUserLoading ? (
           <Skeleton className="h-8 w-8 rounded-full" />
         ) : user ? (

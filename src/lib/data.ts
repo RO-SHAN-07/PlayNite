@@ -48,16 +48,6 @@ export interface Category {
   imageHint: string;
 }
 
-export interface Notification {
-  id: string;
-  userId: string;
-  type: 'new_video' | 'comment';
-  message: string;
-  link?: string;
-  isRead: boolean;
-  timestamp: Timestamp;
-}
-
 export interface Comment {
   id: string;
   userId: string;

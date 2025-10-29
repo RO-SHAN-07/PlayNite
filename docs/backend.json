@@ -505,52 +505,6 @@
         "moderationDate"
       ]
     },
-    "Notification": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Notification",
-      "type": "object",
-      "description": "Represents a notification for a user.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the notification."
-        },
-        "userId": {
-          "type": "string",
-          "description": "The ID of the user who should receive the notification."
-        },
-        "type": {
-          "type": "string",
-          "description": "The type of notification (e.g., 'new_video', 'comment', 'mention')."
-        },
-        "message": {
-          "type": "string",
-          "description": "The content of the notification message."
-        },
-        "timestamp": {
-          "type": "string",
-          "description": "Date and time the notification was created.",
-          "format": "date-time"
-        },
-        "isRead": {
-          "type": "boolean",
-          "description": "Whether the user has read the notification."
-        },
-        "link": {
-          "type": "string",
-          "description": "A URL to navigate to when the notification is clicked.",
-          "format": "uri"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "type",
-        "message",
-        "timestamp",
-        "isRead"
-      ]
-    },
     "Comment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Comment",
@@ -758,26 +712,6 @@
             {
               "name": "followerId",
               "description": "The user ID of the user who is following."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/notifications/{notificationId}",
-        "definition": {
-          "entityName": "Notification",
-          "schema": {
-            "$ref": "#/backend/entities/Notification"
-          },
-          "description": "Stores notifications for a specific user. Only the user can read or list their own notifications.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "notificationId",
-              "description": "The unique identifier of the notification."
             }
           ]
         }
