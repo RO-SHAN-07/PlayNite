@@ -147,7 +147,7 @@ export function AppSidebar() {
                 >
                   <Link href="/account">
                     <Avatar className="h-6 w-6">
-                      {avatarImage && <AvatarImage src={avatarImage.imageUrl} data-ai-hint={avatarImage.imageHint} />}
+                      {avatarImage && <AvatarImage src={avatarImage.imageUrl} data-ai-hint={avatarImage.imageHint || ''} />}
                       <AvatarFallback>JD</AvatarFallback>
                     </Avatar>
                     <span>Jane Doe</span>
