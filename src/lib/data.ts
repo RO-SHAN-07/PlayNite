@@ -12,6 +12,11 @@ export interface Video {
   views: number;
   uploadedAt: Timestamp;
   categoryId: string;
+  // Embed-specific properties
+  isEmbedded?: boolean;
+  embedUrl?: string;
+  embedProvider?: 'youtube' | 'vimeo' | 'adult' | 'generic';
+  videoKey?: string;
 }
 
 export interface UserPreferences {

@@ -2,12 +2,16 @@ import {
   collection,
   writeBatch,
   serverTimestamp,
+  doc,
   Firestore,
 } from 'firebase/firestore';
 
 // This is a placeholder video URL.
 // In a real application, you would use a service like Cloudinary, Mux, or AWS S3.
 const sampleVideoUrl = 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+// Embedded video URL for adult content
+const embeddedVideoUrl = 'https://www.pornhub.com/view_video.php?viewkey=0ef399b63a72d0e4ab57';
 
 const videosToSeed = [
     {
@@ -203,6 +207,22 @@ const videosToSeed = [
       categoryId: 'horror'
     },
     {
+      id: 'embedded-adult-content',
+      title: 'Premium Featured Content',
+      description: 'Exclusive embedded adult content with high quality streaming and professional production.',
+      creator: 'Premium Studios',
+      creatorId: 'dev-user',
+      duration: '25:33',
+      thumbnailUrl: 'https://picsum.photos/seed/premium-1/400/225',
+      videoUrl: embeddedVideoUrl,
+      views: 523456,
+      categoryId: 'action',
+      isEmbedded: true,
+      embedUrl: embeddedVideoUrl,
+      embedProvider: 'adult',
+      videoKey: '0ef399b63a72d0e4ab57'
+    },
+    {
       id: 'sci-fi-3',
       title: 'The Last Data Stream',
       description: 'In a world where memories can be uploaded and stored, a historian discovers a corrupted file that could change the course of history.',
@@ -251,20 +271,20 @@ const videosToSeed = [
       categoryId: 'action'
     }
   ];
+    
   
-
-export async function seedDatabase(db: Firestore) {
-  const videosCollection = collection(db, 'videos');
-  const batch = writeBatch(db);
-
-  videosToSeed.forEach((video) => {
-    const { id, ...videoData } = video;
-    const docRef = collection(db, 'videos').doc(id);
-    batch.set(docRef, {
-        ...videoData,
-        uploadedAt: serverTimestamp(),
+  export async function seedDatabase(db: Firestore) {
+    const videosCollection = collection(db, 'videos');
+    const batch = writeBatch(db);
+  
+    videosToSeed.forEach((video) => {
+      const { id, ...videoData } = video;
+      const docRef = doc(videosCollection, id);
+      batch.set(docRef, {
+          ...videoData,
+          uploadedAt: serverTimestamp(),
+      });
     });
-  });
-
-  await batch.commit();
-}
+  
+    await batch.commit();
+  }

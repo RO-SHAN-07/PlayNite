@@ -8,13 +8,14 @@ import { formatDistanceToNow } from 'date-fns';
 import { Star, ThumbsUp, ThumbsDown, Share2, Loader2, Send } from 'lucide-react';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import { useFirestore, useUser, setDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { useDoc } from '@/firebase/firestore/use-doc.tsx';
+import { useDoc } from '@/firebase/firestore/use-doc';
 import { collection, doc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
 import { useMemo, useEffect, useRef, useState } from 'react';
-import { useCollection } from '@/firebase/firestore/use-collection.tsx';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { VideoPlayer } from '@/components/video-player';
+import { VideoEmbed } from '@/components/video-embed';
 import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
@@ -59,8 +60,8 @@ function CommentsSection({ videoId }: { videoId: string }) {
         return query(collection(firestore, `videos/${videoId}/comments`), orderBy('timestamp', 'desc'));
     }, [firestore, videoId]);
 
-    const { data: comments, isLoading } = useCollection<Comment>(commentsQuery);
-
+    const { data: comments, loading } = useCollection<Comment>(commentsQuery);
+  
     const handlePostComment = async () => {
         if (!user || !firestore) {
             toast({ variant: 'destructive', title: 'Please log in to comment.' });
@@ -113,7 +114,7 @@ function CommentsSection({ videoId }: { videoId: string }) {
                 </div>
             )}
             <div className="space-y-6">
-                {isLoading ? (
+                {loading ? (
                     Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
                 ) : comments && comments.length > 0 ? (
                     comments.map(comment => <CommentItem key={comment.id} comment={comment} />)
@@ -150,7 +151,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     return query(collection(firestore, `users/${user.uid}/favorites`), where('videoId', '==', videoId), limit(1));
   }, [firestore, user, videoId]);
 
-  const { data: favorite, isLoading: favoriteLoading } = useCollection(favoriteQuery);
+  const { data: favorite, loading: favoriteLoading } = useCollection(favoriteQuery);
   const isFavoritedInitially = useMemo(() => favorite && favorite.length > 0, [favorite]);
   const [isFavoriting, setIsFavoriting] = useState(false);
 
@@ -161,7 +162,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     return collection(firestore, 'videos', videoId, 'likes');
     }, [firestore, videoId]);
 
-    const { data: likes, isLoading: likesLoading } = useCollection<VideoLike>(likesQuery);
+    const { data: likes, loading: likesLoading } = useCollection<VideoLike>(likesQuery);
 
     const userLikeQuery = useMemoFirebase(() => {
         if (!firestore || !user || !videoId) return null;
@@ -182,12 +183,12 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   const recommendedVideosQuery = useMemoFirebase(() => {
     if (!firestore || !video) return null;
     return query(
-      collection(firestore, 'videos'), 
+      collection(firestore, 'videos'),
       where('categoryId', '==', video.categoryId),
       limit(10)
     );
   }, [firestore, video]);
-  const { data: recommendedVideos, isLoading: recommendedVideosLoading } = useCollection<Video>(recommendedVideosQuery);
+  const { data: recommendedVideos, loading: recommendedVideosLoading } = useCollection<Video>(recommendedVideosQuery);
 
 
   // Add to history
@@ -228,7 +229,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
           await setDocumentNonBlocking(favoriteRef, {
               videoId: video.id,
               addedDate: serverTimestamp(),
-          });
+          }, { merge: true });
           toast({ title: 'Added to favorites!' });
           setIsFavorited(true);
       }
@@ -251,10 +252,10 @@ export default function WatchPage({ params }: { params: { id: string } }) {
         if (userLike && userLike.type === type) {
             await deleteDocumentNonBlocking(likeRef);
         } else {
-            await setDocumentNonBlocking(likeRef, { type });
+            await setDocumentNonBlocking(likeRef, { type }, { merge: true });
         }
     } catch (error) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not save reaction.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not save reaction.' });
     } finally {
         setIsLiking(false);
     }
@@ -293,8 +294,25 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     <>
     <div className="grid lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-6">
-        <div className="aspect-video w-full rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
-            <VideoPlayer ref={videoPlayerRef} src={video.videoUrl} poster={video.thumbnailUrl} startTime={startTime ? Number(startTime) : undefined} />
+        <div className="aspect-video w-full rounded-2xl overflow-hidden bg-muted">
+            {video.isEmbedded ? (
+                <VideoEmbed
+                    videoId={video.id}
+                    videoUrl={video.embedUrl || video.videoUrl}
+                    title={video.title}
+                    duration={video.duration}
+                    views={video.views}
+                    thumbnailUrl={video.thumbnailUrl}
+                    autoplay={true}
+                    showControls={true}
+                    showMetadata={true}
+                    aspectRatio="16:9"
+                />
+            ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                    <VideoPlayer ref={videoPlayerRef} src={video.videoUrl} poster={video.thumbnailUrl} startTime={startTime ? Number(startTime) : undefined} />
+                </div>
+            )}
         </div>
 
         <div className="space-y-4">

@@ -47,10 +47,10 @@ export default function Home() {
 
   const videosQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'videos'), orderBy('views', 'desc'), limit(16));
+    return query(collection(firestore, 'videos'), orderBy('uploadedAt', 'desc'), limit(16));
   }, [firestore]);
 
-  const { data: videos, isLoading: loading } = useCollection<Video>(videosQuery);
+  const { data: videos, loading } = useCollection<Video>(videosQuery);
 
   const featuredVideo = videos?.[0];
   const heroImage = {
@@ -71,7 +71,7 @@ export default function Home() {
         await setDocumentNonBlocking(watchLaterRef, {
             videoId: featuredVideo.id,
             addedDate: serverTimestamp(),
-        });
+        }, { merge: true });
         toast({ title: 'Added to Watch Later', description: `"${featuredVideo.title}" has been added to your list.` });
     } catch(error) {
         toast({ variant: 'destructive', title: 'Error', description: 'Could not add to Watch Later.' });
@@ -185,7 +185,7 @@ export default function Home() {
             <VideoRowSkeleton />
         ) : videos && videos.length > 6 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {videos.slice(6, 11).map((video) => (
+                {videos.slice(6, 12).map((video) => (
                     <VideoCard key={video.id} video={video} />
                 ))}
             </div>
