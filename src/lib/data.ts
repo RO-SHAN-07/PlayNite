@@ -56,17 +56,6 @@ export interface Comment {
   timestamp: Timestamp;
 }
 
-export interface Notification {
-    id: string;
-    userId: string;
-    type: 'new_follower' | 'new_comment' | 'new_video';
-    text: string;
-    relatedId?: string; // e.g., follower's userId, videoId, commentId
-    isRead: boolean;
-    timestamp: Timestamp;
-}
-
-
 export const categories: Category[] = [
   { id: 'action', name: 'Action', imageUrl: 'https://picsum.photos/seed/cat-action/400/225', imageHint: 'action explosion' },
   { id: 'comedy', name: 'Comedy', imageUrl: 'https://picsum.photos/seed/cat-comedy/400/225', imageHint: 'funny laugh' },
