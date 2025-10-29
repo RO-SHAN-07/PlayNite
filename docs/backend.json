@@ -339,10 +339,6 @@
           "type": "string",
           "description": "Unique identifier for the memory entity."
         },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Memory)"
-        },
         "videoId": {
           "type": "string",
           "description": "Reference to Video. (Relationship: Video 1:N Memory)"
@@ -363,7 +359,6 @@
       },
       "required": [
         "id",
-        "userId",
         "videoId",
         "timestamp",
         "note",
@@ -676,7 +671,7 @@
         }
       },
       {
-        "path": "/memories/{memoryId}",
+        "path": "/users/{userId}/memories/{memoryId}",
         "definition": {
           "entityName": "Memory",
           "schema": {
@@ -684,6 +679,10 @@
           },
           "description": "Stores a user's saved video moments (memories). Accessible only to the user who created it.",
           "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
             {
               "name": "memoryId",
               "description": "The unique identifier of the memory item."

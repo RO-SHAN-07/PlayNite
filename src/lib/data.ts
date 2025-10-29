@@ -36,7 +36,6 @@ export interface VideoHistory {
 export interface Memory {
   id: string;
   videoId: string;
-  userId: string;
   timestamp: number; // in seconds
   note: string;
   addedDate: Timestamp | FieldValue;

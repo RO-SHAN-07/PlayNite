@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 export default function WatchPage({ params }: { params: { id: string } }) {
-  const { id: videoId } = params;
+  const videoId = params.id;
   const firestore = useFirestore();
   const { user } = useUser();
   const router = useRouter();
@@ -109,12 +109,12 @@ export default function WatchPage({ params }: { params: { id: string } }) {
 
     setIsSavingMemory(true);
     try {
-        const memoriesCollection = collection(firestore, 'memories');
+        // Save to the subcollection under the user's document
+        const memoriesCollection = collection(firestore, `users/${user.uid}/memories`);
         const currentTime = videoPlayerRef.current.getCurrentTime();
         
         await addDocumentNonBlocking(memoriesCollection, {
             videoId: video.id,
-            userId: user.uid,
             timestamp: currentTime,
             note: memoryNote,
             addedDate: serverTimestamp(),
