@@ -11,10 +11,18 @@ import {
   FastForward,
   Rewind,
   Loader2,
+  PictureInPicture2,
+  Settings,
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
 
 type VideoPlayerProps = {
   src: string;
@@ -33,17 +41,18 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [playbackRate, setPlaybackRate] = useState(1);
 
   let controlsTimeout: NodeJS.Timeout;
 
   const handleMouseMove = () => {
     setShowControls(true);
     clearTimeout(controlsTimeout);
-    controlsTimeout = setTimeout(() => {
-      if (isPlaying) {
+    if (isPlaying) {
+      controlsTimeout = setTimeout(() => {
         setShowControls(false);
-      }
-    }, 3000);
+      }, 3000);
+    }
   };
 
   useEffect(() => {
@@ -69,6 +78,28 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     const onFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if((e.target as HTMLElement)?.tagName?.toLowerCase() === 'input') return;
+        switch(e.key.toLowerCase()){
+            case ' ':
+                e.preventDefault();
+                togglePlay();
+                break;
+            case 'm':
+                toggleMute();
+                break;
+            case 'f':
+                toggleFullscreen();
+                break;
+            case 'arrowright':
+                handleSeek(10);
+                break;
+            case 'arrowleft':
+                handleSeek(-10);
+                break;
+        }
+    }
     
     container.addEventListener('mousemove', handleMouseMove);
     video.addEventListener('play', onPlay);
@@ -79,6 +110,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     video.addEventListener('canplay', onCanPlay);
     video.addEventListener('waiting', onWaiting);
     document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       clearTimeout(controlsTimeout);
@@ -91,8 +123,15 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
       video.removeEventListener('canplay', onCanPlay);
       video.removeEventListener('waiting', onWaiting);
       document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isPlaying]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+        videoRef.current.playbackRate = playbackRate;
+    }
+  }, [playbackRate]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -140,12 +179,24 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
     }
   };
 
+  const togglePictureInPicture = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (document.pictureInPictureElement) {
+      document.exitPictureInPicture();
+    } else {
+      video.requestPictureInPicture();
+    }
+  }
+
   const formatTime = (time: number) => {
     if (isNaN(time) || time === 0) return '0:00';
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
+
+  const playbackRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
   return (
     <div
@@ -163,7 +214,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
         onDoubleClick={toggleFullscreen}
       />
       {isLoading && (
-         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+         <div className="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none">
             <Loader2 className="w-12 h-12 text-white animate-spin" />
         </div>
       )}
@@ -171,7 +222,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
       <div
         className={cn(
           'absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300',
-          showControls || !isPlaying ? 'opacity-100' : 'opacity-0'
+          (showControls || !isPlaying) ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}
       >
         <div className="flex items-center gap-2 text-white">
@@ -213,6 +264,34 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                  <Settings />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-40 bg-black/80 border-white/20 text-white p-2">
+                <div className="text-sm font-bold mb-2 px-2">Playback Speed</div>
+                 {playbackRates.map(rate => (
+                    <button 
+                        key={rate} 
+                        onClick={() => setPlaybackRate(rate)} 
+                        className={cn(
+                            "w-full text-left p-2 text-sm rounded-md hover:bg-white/10",
+                            playbackRate === rate && "bg-primary text-primary-foreground hover:bg-primary/90"
+                        )}
+                    >
+                        {rate === 1 ? 'Normal' : `${rate}x`}
+                    </button>
+                 ))}
+              </PopoverContent>
+            </Popover>
+            
+             {document.pictureInPictureEnabled && (
+                <Button variant="ghost" size="icon" onClick={togglePictureInPicture} className="text-white hover:bg-white/10">
+                    <PictureInPicture2 />
+                </Button>
+             )}
              <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-white hover:bg-white/10">
                 {isFullscreen ? <Minimize /> : <Maximize />}
             </Button>
