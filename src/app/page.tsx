@@ -13,33 +13,33 @@ import { categories, type Video } from '@/lib/data';
 import { VideoCard } from '@/components/video-card';
 import { PlayCircle, Plus } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, limit, query } from 'firebase/firestore';
+import { collection, limit, query, orderBy } from 'firebase/firestore';
 import { useFirestore, useMemoFirebase } from '@/firebase';
-import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-function VideoCardSkeleton() {
-  return (
-    <div className="space-y-2">
-      <Skeleton className="aspect-video w-full rounded-lg" />
-      <div className="flex items-start gap-4 p-2">
-        <Skeleton className="h-10 w-10 rounded-full" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
-        </div>
+function VideoRowSkeleton({ count = 5 }: { count?: number }) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {Array.from({ length: count }).map((_, i) => (
+           <div key={i} className="space-y-2">
+              <Skeleton className="aspect-video w-full rounded-lg" />
+              <div className="space-y-1 p-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+              </div>
+           </div>
+        ))}
       </div>
-    </div>
-  );
+    );
 }
+
 
 export default function Home() {
   const firestore = useFirestore();
 
   const videosQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'videos'), limit(16));
+    return query(collection(firestore, 'videos'), orderBy('views', 'desc'), limit(16));
   }, [firestore]);
 
   const { data: videos, isLoading: loading } = useCollection<Video>(videosQuery);
@@ -66,12 +66,13 @@ export default function Home() {
                 fill
                 className="object-cover"
                 data-ai-hint={heroImage.imageHint}
+                priority
               />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
             <div className="absolute bottom-0 left-0 p-8 md:p-12 text-white">
               <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4">{featuredVideo.title}</h1>
-              <p className="max-w-xl text-lg text-foreground/80 mb-6">{featuredVideo.description}</p>
+              <p className="max-w-xl text-lg text-foreground/80 mb-6 line-clamp-2">{featuredVideo.description}</p>
               <div className="flex gap-4">
                 <Button size="lg" className="bg-primary hover:bg-primary/90" asChild>
                   <Link href={`/watch/${featuredVideo.id}`}>
@@ -113,36 +114,43 @@ export default function Home() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10" />
-          <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10" />
+          <CarouselPrevious className="absolute left-[-1rem] top-1/2 -translate-y-1/2 z-10" />
+          <CarouselNext className="absolute right-[-1rem] top-1/2 -translate-y-1/2 z-10" />
         </Carousel>
       </section>
 
       {/* Recommended For You */}
       <section>
-        <h2 className="text-3xl font-bold font-headline mb-6">Recommended For You</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {loading 
-            ? Array.from({ length: 10 }).map((_, i) => <VideoCardSkeleton key={i} />)
-            : videos?.slice(1, 11).map((video) => (
-                <VideoCard key={video.id} video={video} />
-              ))}
-        </div>
+        <h2 className="text-3xl font-bold font-headline mb-6">Trending Now</h2>
+         {loading ? (
+          <VideoRowSkeleton />
+        ) : videos && videos.length > 1 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {videos.slice(1, 6).map((video) => (
+              <VideoCard key={video.id} video={video} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-muted-foreground col-span-full py-12">
+            <p>No trending videos found.</p>
+          </div>
+        )}
       </section>
 
-      {/* Continue Watching */}
+      {/* New Releases */}
       <section>
-        <h2 className="text-3xl font-bold font-headline mb-6">Continue Watching</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {loading
-            ? Array.from({ length: 5 }).map((_, i) => <VideoCardSkeleton key={i} />)
-            : videos?.slice(11, 16).map((video) => (
-                <VideoCard key={video.id} video={video} />
-              ))}
-        </div>
-         { !loading && videos?.length === 0 && (
-            <div className="text-center text-muted-foreground col-span-full">
-                <p>Start watching videos to see your history here.</p>
+        <h2 className="text-3xl font-bold font-headline mb-6">New Releases</h2>
+        {loading ? (
+            <VideoRowSkeleton />
+        ) : videos && videos.length > 6 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                {videos.slice(6, 11).map((video) => (
+                    <VideoCard key={video.id} video={video} />
+                ))}
+            </div>
+        ) : !loading && (
+             <div className="text-center text-muted-foreground col-span-full py-12">
+                <p>No new releases at the moment. Check back later!</p>
             </div>
         )}
       </section>
