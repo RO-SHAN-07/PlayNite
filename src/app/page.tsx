@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { categories, type Video } from '@/lib/data';
 import { VideoCard } from '@/components/video-card';
+import { EmbeddedVideo } from '@/components/embedded-video';
 import { PlayCircle, Plus, Loader2 } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, limit, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
@@ -192,6 +193,9 @@ export default function Home() {
             <VideoRowSkeleton />
         ) : newReleases && newReleases.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="col-span-full">
+                  <EmbeddedVideo />
+                </div>
                 {newReleases.map((video) => (
                     <VideoCard key={video.id} video={video} />
                 ))}
