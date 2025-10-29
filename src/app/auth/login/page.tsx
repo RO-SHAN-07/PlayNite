@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, useUser, initiateEmailSignIn } from '@/firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useAuth, useUser } from '@/firebase';
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
@@ -40,7 +40,7 @@ export default function LoginPage() {
     if (!auth) return;
     setLoading(true);
     try {
-      await initiateEmailSignIn(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       // Non-blocking, onAuthStateChanged will handle redirect
       // We can optimistically navigate or wait. For now, let's show loading.
       // After a timeout, if user is not redirected, show an error.
