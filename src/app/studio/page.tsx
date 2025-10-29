@@ -8,7 +8,7 @@ import { collection, query, where } from 'firebase/firestore';
 import type { Video } from '@/lib/data';
 import { MoreHorizontal, PlusCircle, VideoIcon, Database, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { seedDatabase } from '@/lib/seed';
 import { toast } from '@/hooks/use-toast';
@@ -20,6 +20,12 @@ export default function StudioPage() {
   const [isSeeding, setIsSeeding] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/auth/login');
+    }
+  }, [isUserLoading, user, router]);
+
   const userVideosQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(collection(firestore, 'videos'), where('creatorId', '==', user.uid));
@@ -27,13 +33,8 @@ export default function StudioPage() {
 
   const { data: userVideos, isLoading: loading, refresh } = useCollection<Video>(userVideosQuery);
 
-  if (isUserLoading) {
+  if (isUserLoading || !user) {
     return <div className="flex justify-center items-center h-96"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>;
-  }
-
-  if(!user) {
-    router.push('/auth/login');
-    return null;
   }
 
   const handleSeed = async () => {

@@ -4,7 +4,7 @@ import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { History, Loader2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import type { Video, VideoHistory } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,12 @@ export default function HistoryPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/auth/login');
+    }
+  }, [isUserLoading, user, router]);
 
   const historyQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -42,13 +48,8 @@ export default function HistoryPage() {
     return uniqueVideoIds.map(id => videoMap.get(id)).filter(Boolean) as Video[];
   }, [historyItems, videoMap]);
 
-  if (isUserLoading) {
+  if (isUserLoading || !user) {
     return <div className="flex justify-center items-center h-96"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>;
-  }
-
-  if(!user) {
-    router.push('/auth/login');
-    return null;
   }
 
   const isLoading = historyLoading || videosLoading;

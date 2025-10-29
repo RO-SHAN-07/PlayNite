@@ -62,6 +62,9 @@ export default function SettingsPage() {
     });
 
     useEffect(() => {
+        if (!isUserLoading && !user) {
+            router.push('/auth/login');
+        }
         if (user) {
             form.reset({
                 displayName: user.displayName || '',
@@ -73,7 +76,7 @@ export default function SettingsPage() {
                 videoQuality: 'auto',
             });
         }
-    }, [user, form]);
+    }, [user, isUserLoading, form, router]);
 
   async function onSubmit(data: SettingsFormValues) {
     if (!user || !auth?.currentUser || !firestore) {
@@ -106,17 +109,12 @@ export default function SettingsPage() {
     }
   }
 
-  if (isUserLoading) {
+  if (isUserLoading || !user) {
       return (
         <div className="max-w-4xl mx-auto flex justify-center items-center h-96">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
         </div>
       )
-  }
-
-  if(!user) {
-    router.push('/auth/login');
-    return null;
   }
 
   return (

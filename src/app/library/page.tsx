@@ -6,7 +6,7 @@ import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy } from 'firebase/firestore';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { Video, Favorite, VideoHistory } from '@/lib/data';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 
@@ -31,6 +31,12 @@ export default function LibraryPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/auth/login');
+    }
+  }, [isUserLoading, user, router]);
 
   const favoritesQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -68,13 +74,8 @@ export default function LibraryPage() {
     }, [firestore, history])
   );
 
-  if (isUserLoading) {
+  if (isUserLoading || !user) {
     return <div className="flex justify-center items-center h-96"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>;
-  }
-
-  if(!user) {
-    router.push('/auth/login');
-    return null;
   }
 
   const isLoading = favoritesLoading || historyLoading || uploadsLoading || favoriteVideosLoading || historyVideosLoading;

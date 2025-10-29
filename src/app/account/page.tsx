@@ -7,22 +7,24 @@ import { useUser } from '@/firebase';
 import { Camera, Shield, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function AccountPage() {
   const { user, loading } = useUser();
   const router = useRouter();
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth/login');
+    }
+  }, [loading, user, router]);
+
+  if (loading || !user) {
     return (
       <div className="max-w-4xl mx-auto flex justify-center items-center h-96">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!user) {
-    router.push('/auth/login');
-    return null;
   }
   
   const userProfile = {
