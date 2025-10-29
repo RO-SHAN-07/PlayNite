@@ -6,7 +6,7 @@ import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy } from 'firebase/firestore';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { Video, Favorite, VideoHistory } from '@/lib/data';
-import { useMemo, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 
@@ -69,7 +69,7 @@ export default function LibraryPage() {
     useMemoFirebase(() => {
       if (!firestore || !history || history.length === 0) return null;
       const videoIds = history.map(h => h.videoId).filter((v, i, a) => a.indexOf(v) === i);
-      if(videoIds.length === 0) return null;
+      if (videoIds.length === 0) return null;
       return query(collection(firestore, 'videos'), where('__name__', 'in', videoIds));
     }, [firestore, history])
   );

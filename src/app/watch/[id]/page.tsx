@@ -17,7 +17,7 @@ import { toast } from '@/hooks/use-toast';
 import { VideoPlayer } from '@/components/video-player';
 
 export default function WatchPage({ params }: { params: { id: string } }) {
-  const videoId = params.id;
+  const { id: videoId } = params;
   const firestore = useFirestore();
   const { user } = useUser();
   const router = useRouter();

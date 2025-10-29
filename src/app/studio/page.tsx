@@ -8,7 +8,7 @@ import { collection, query, where } from 'firebase/firestore';
 import type { Video } from '@/lib/data';
 import { MoreHorizontal, PlusCircle, VideoIcon, Database, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { seedDatabase } from '@/lib/seed';
 import { toast } from '@/hooks/use-toast';

@@ -10,16 +10,16 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function AccountPage() {
-  const { user, loading } = useUser();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isUserLoading && !user) {
       router.push('/auth/login');
     }
-  }, [loading, user, router]);
+  }, [isUserLoading, user, router]);
 
-  if (loading || !user) {
+  if (isUserLoading || !user) {
     return (
       <div className="max-w-4xl mx-auto flex justify-center items-center h-96">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />
