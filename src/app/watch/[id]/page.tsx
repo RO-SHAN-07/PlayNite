@@ -20,11 +20,12 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
   const { user } = useUser();
   const router = useRouter();
+  const videoId = params.id;
 
   const videoRef = useMemoFirebase(() => {
     if (!firestore) return null;
-    return doc(firestore, 'videos', params.id);
-  }, [firestore, params.id]);
+    return doc(firestore, 'videos', videoId);
+  }, [firestore, videoId]);
   const { data: video, isLoading: videoLoading } = useDoc<Video>(videoRef);
 
   const creatorRef = useMemoFirebase(() => {
@@ -39,8 +40,8 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   }, [firestore, user]);
   const favoriteQuery = useMemoFirebase(() => {
     if (!favoritesRef) return null;
-    return query(favoritesRef, where('videoId', '==', params.id), limit(1));
-  }, [favoritesRef, params.id]);
+    return query(favoritesRef, where('videoId', '==', videoId), limit(1));
+  }, [favoritesRef, videoId]);
 
   const { data: favorite, isLoading: favoriteLoading } = useCollection(favoriteQuery);
   const isFavorited = favorite && favorite.length > 0;
