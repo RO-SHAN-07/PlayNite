@@ -1,0 +1,110 @@
+# **App Name**: PlayNite
+
+## Core Features:
+
+- User Authentication: Secure user registration, login, and session management.
+- Admin Panel: Dedicated admin panel for managing videos, users, and site settings.
+- User Panel: Dedicated user panel for browsing and viewing videos with 50+ new features.
+- Video Streaming: High-quality video streaming with mobile-friendly optimization.
+- CSV/ZIP Upload: Admin tool for uploading video metadata via CSV files and embedding code via ZIP files, automating content updates. Includes 20+ new admin panel features.
+- IFrame Embed: Support for secure embedding of videos via iframe codes.
+- AI-Powered Content Recommendation: AI algorithms analyze user viewing history to provide personalized content recommendations, enhancing user engagement and discovery of relevant videos.
+- Advanced Search with Auto-Suggestions: AI-driven auto-suggestions and typo correction to improve search accuracy and user experience.
+- Smart Filters: Smart filters (categories, duration, quality, trending)
+- Content Summarization: AI-powered tool to summarize content of each video.
+- Dynamic Home Feed: Dynamic home feed (personalized)
+- Category Carousel: Category carousel
+- Auto-play Next Video: Auto-play next video
+- Floating Mini-Player: Floating mini-player
+- History Tracking: History tracking
+- Watch Later List: Watch later list
+- Favorites List: Favorites list
+- Continue Watching Section: Continue watching section
+- Theme Switcher: Theme switcher (dark/light)
+- Screen Orientation Auto-Adjust: Screen orientation auto-adjust
+- Related Videos Panel: Related videos panel
+- Quick Rewind/Forward Buttons: Quick rewind/forward buttons
+- Keyboard Shortcuts: Keyboard shortcuts
+- Cast to Device: Cast to device (Chromecast/WebCast)
+- PIP (Picture-in-picture mode): PIP (Picture-in-picture mode)
+- Frame Preview on Hover: Frame preview on hover
+- Quality Selector: Quality selector (480p–1080p)
+- Volume Slider: Volume slider
+- Mute/Unmute Control: Mute/unmute control
+- Fullscreen Toggle: Fullscreen toggle
+- Playback Speed Controller: Playback speed controller
+- Episodes or Series Mode: Episodes or series mode
+- Video Rating: Video rating (anonymous)
+- Report Inappropriate Video: Report inappropriate video (flag)
+- AI-Moderated Video Tags: AI-moderated video tags
+- Trending Tab: Trending tab
+- Popular Creators List: Popular creators list (non-user uploads)
+- Category Browsing Grid: Category browsing grid
+- Recently Added List: Recently added list
+- AI-Mixed Playlist Creator: AI-mixed playlist creator
+- Custom Video Queue: Custom video queue
+- Lazy Image Loading: Lazy image loading
+- Infinite Scroll: Infinite scroll
+- Scroll-to-Top Button: Scroll-to-top button
+- Glassmorphic Sidebar Navigation: Glassmorphic sidebar navigation
+- Animated Page Transitions: Animated page transitions
+- Loading Skeleton Screens: Loading skeleton screens
+- Tooltip Hints on Hover: Tooltip hints on hover
+- Gesture Control: Gesture control (mobile)
+- Swipe Navigation Between Screens: Swipe navigation between screens
+- Smart Back Button History: Smart back button history
+- Tabs for Navigation: Tabs for “Home”, “Explore”, “Library”, “Settings”, “Account”
+- Compact Mobile Bottom Nav Bar: Compact mobile bottom nav bar
+- Notifications: Notifications (content-based)
+- Secure Autoplay Toggle: Secure autoplay toggle
+- AI Text-to-Speech: AI text-to-speech for metadata reading
+- Accessibility Controls: Accessibility controls (contrast, text size)
+- Cookie Consent + Policy Page: Cookie consent + policy page
+- Skeleton Loader Animations: Skeleton loader animations
+- Tag Cloud Interface: Tag cloud interface
+- Multi-language Localization: Multi-language localization (AI‑translated UI)
+- Scroll-based Parallax Animation Effects: Scroll-based parallax animation effects
+- Offline video bookmarks: Offline video bookmarks (metadata only, no playback)
+- Dynamic micro-interactions: Dynamic micro-interactions (hover effects, focus rings)
+- AI-based voice search: AI-based voice search
+- Video chapter markers generated automatically: Video chapter markers generated automatically
+- Custom thumbnail selector for admin-assigned videos: Custom thumbnail selector for admin-assigned videos
+- Adaptive bit-rate streaming: Adaptive bit-rate streaming (HLS/DASH)
+- Auto buffer optimization for low networks: Auto buffer optimization for low networks
+- Hide watched videos toggle: Hide watched videos toggle
+- AI-mood playlists: AI-mood playlists (curate by emotion, tone)
+- Auto day/night mode detection: Auto day/night mode detection
+- Collapsible player interface: Collapsible player interface
+- Timer for sleep mode or stop playback after duration: Timer for sleep mode or stop playback after duration
+- Video queue reorder: Video queue reorder (drag & drop)
+- Continue watching syncing across devices: Continue watching syncing across devices (via cookies/session)
+- Skip intro/outro: Skip intro/outro (AI-detected sections)
+- View statistics for each video: View statistics for each video (views, likes, watch time)
+- Short preview screen from trending tab: Short preview screen from trending tab
+- Advanced content filters: Advanced content filters: “Most discussed”, “Recently rated”
+- Dynamic chips for tags in description: Dynamic chips for tags in description
+- Minimal player controls for mobile landscape mode: Minimal player controls for mobile landscape mode
+- Double-tap gestures for fullscreen toggle: Double-tap gestures for fullscreen toggle
+- AI-generated subtitles: AI-generated subtitles (transcription)
+- Language selection for captions: Language selection for captions
+- History insight dashboard: History insight dashboard (time watched, categories explored)
+- Recent searches with clear-all option: Recent searches with clear-all option
+- AI keyword analytics for trending topics: AI keyword analytics for trending topics
+- Stay-safe mode: Stay-safe mode (blur sensitive thumbnails until clicked)
+- Incognito watch session: Incognito watch session (not stored in history)
+- Web notifications for new releases: Web notifications for new releases
+- Text-size adjustment slider for accessibility: Text-size adjustment slider for accessibility
+- GDPR & cookie management center: GDPR & cookie management center
+- Copy video link/share options: Copy video link/share options (clipboard + QR code)
+- Auto scroll to comments or related segment on click: Auto scroll to comments or related segment on click
+- AI-created content tags cloud on Explore page: AI-created content tags cloud on Explore page
+- Fast load time optimization: Fast load time optimization (code-splitting, prefetch)
+- Content Moderation: AI-powered tool to automatically moderate uploaded content based on content policies. Uses a tool to decide what content to remove.
+- Automated Tagging: Automatically tag videos based on content using AI to improve searchability.
+
+## Style Guidelines:
+
+- Dark gradients with glassmorphism blur effects.
+- Inter (Headings + Body)
+- Responsive layout design to ensure optimal viewing experience across devices. Hamburger menu (☰) on the top-right corner to open a side menu. Back button (←) for navigation.
+- Subtle transitions and animations for a smooth and engaging user experience. Use of Lalit animations. Glassmorphism effects for a modern, frosted glass look.
