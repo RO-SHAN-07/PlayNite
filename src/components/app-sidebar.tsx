@@ -13,6 +13,7 @@ import {
   Video,
   Info,
   ListVideo,
+  Rss,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -47,9 +48,16 @@ const SIDEBAR_SECTIONS = [
         icon: Compass,
       },
       {
+        href: '/feed',
+        label: 'Feed',
+        icon: Rss,
+        authRequired: true,
+      },
+      {
         href: '/library',
         label: 'Library',
         icon: Library,
+        authRequired: true,
       },
     ],
   },
@@ -77,6 +85,7 @@ const SIDEBAR_SECTIONS = [
         icon: Brain,
       },
     ],
+    authRequired: true,
   },
    {
     label: 'Creator',
@@ -87,6 +96,7 @@ const SIDEBAR_SECTIONS = [
         icon: Video,
       },
     ],
+    authRequired: true,
   },
 ];
 
@@ -182,23 +192,25 @@ export function AppSidebar() {
 
       <SidebarContent>
         {SIDEBAR_SECTIONS.map((section) => (
-         (!user && (section.label === 'My Library' || section.label === 'Creator')) ? null : (
+         (section.authRequired && !user) ? null : (
           <SidebarGroup key={section.label}>
             <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
             <SidebarMenu>
               {section.items.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    tooltip={{ children: item.label }}
-                  >
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                 (item.authRequired && !user) ? null : (
+                    <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={pathname === item.href}
+                        tooltip={{ children: item.label }}
+                    >
+                        <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                    </SidebarMenuItem>
+                 )
               ))}
             </SidebarMenu>
           </SidebarGroup>

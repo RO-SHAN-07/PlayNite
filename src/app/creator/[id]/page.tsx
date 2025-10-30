@@ -3,12 +3,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useUser, useFirestore, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { Loader2, Rss, UserCheck, UserPlus } from 'lucide-react';
 import { notFound, useRouter } from 'next/navigation';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { collection, doc, query, where } from 'firebase/firestore';
+import { collection, doc, query, where, deleteDoc, setDoc } from 'firebase/firestore';
 import type { UserProfile, Video } from '@/lib/data';
 import { toast } from '@/hooks/use-toast';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -75,10 +75,10 @@ export default function CreatorPage({ params }: { params: { id: string } }) {
 
     try {
       if (previousState) {
-        await deleteDocumentNonBlocking(followDocRef);
+        await deleteDoc(followDocRef);
         toast({ title: 'Unfollowed!', description: `You are no longer following ${creator?.displayName}.` });
       } else {
-        await setDocumentNonBlocking(followDocRef, {
+        await setDoc(followDocRef, {
           followerId: user.uid,
           followedId: creatorId,
           timestamp: new Date(),

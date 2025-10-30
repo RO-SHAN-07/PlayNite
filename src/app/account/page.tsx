@@ -3,14 +3,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUser, useFirestore, updateDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { Camera, Shield, Loader2, Edit3, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { doc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/data';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
@@ -40,11 +40,15 @@ export default function AccountPage() {
     }
   }, [isUserLoading, user, router, userProfile]);
 
-  const handleSaveBio = () => {
+  const handleSaveBio = async () => {
     if (!userProfileRef) return;
-    updateDocumentNonBlocking(userProfileRef, { bio });
-    toast({ title: 'Bio updated successfully!' });
-    setIsEditingBio(false);
+    try {
+        await updateDoc(userProfileRef, { bio });
+        toast({ title: 'Bio updated successfully!' });
+        setIsEditingBio(false);
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not update bio.'})
+    }
   }
 
   const isLoading = isUserLoading || profileLoading;

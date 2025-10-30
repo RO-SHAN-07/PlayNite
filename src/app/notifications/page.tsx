@@ -25,7 +25,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
           <span className="font-semibold">{notification.from?.name || 'System'}</span> {notification.message}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          {formatDistanceToNow(notification.createdAt.toDate(), { addSuffix: true })}
+          {notification.createdAt ? formatDistanceToNow(notification.createdAt.toDate(), { addSuffix: true }) : ''}
         </p>
       </div>
     </div>

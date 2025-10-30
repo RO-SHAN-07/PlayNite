@@ -179,6 +179,12 @@ export interface VideoLike {
     type: 'like' | 'dislike';
 }
 
+export interface Follower {
+    followerId: string;
+    followedId: string;
+    timestamp: Timestamp | FieldValue;
+}
+
 export interface Notification {
   id: string;
   message: string;

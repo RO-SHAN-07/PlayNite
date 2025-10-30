@@ -7,9 +7,9 @@ import { type Video, UserProfile, Comment, VideoLike, Playlist } from '@/lib/dat
 import { formatDistanceToNow } from 'date-fns';
 import { Star, ThumbsUp, ThumbsDown, Share2, Loader2, Send, ListPlus } from 'lucide-react';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
-import { useFirestore, useUser, setDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { collection, doc, serverTimestamp, query, where, limit, orderBy, arrayUnion } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, query, where, limit, orderBy, arrayUnion, arrayRemove, setDoc, deleteDoc, addDoc, updateDoc } from 'firebase/firestore';
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -63,7 +63,7 @@ function CommentsSection({ videoId }: { videoId: string }) {
         return query(collection(firestore, `videos/${videoId}/comments`), orderBy('timestamp', 'desc'));
     }, [firestore, videoId]);
 
-    const { data: comments, loading } = useCollection<Comment>(commentsQuery);
+    const { data: comments, isLoading } = useCollection<Comment>(commentsQuery);
   
     const handlePostComment = async () => {
         if (!user || !firestore) {
@@ -75,7 +75,7 @@ function CommentsSection({ videoId }: { videoId: string }) {
         setIsPosting(true);
         try {
             const commentsCollection = collection(firestore, `videos/${videoId}/comments`);
-            await addDocumentNonBlocking(commentsCollection, {
+            await addDoc(commentsCollection, {
                 videoId,
                 userId: user.uid,
                 text: commentText,
@@ -117,7 +117,7 @@ function CommentsSection({ videoId }: { videoId: string }) {
                 </div>
             )}
             <div className="space-y-6">
-                {loading ? (
+                {isLoading ? (
                     Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
                 ) : comments && comments.length > 0 ? (
                     comments.map(comment => <CommentItem key={comment.id} comment={comment} />)
@@ -169,7 +169,7 @@ function AddToPlaylistDialog({ videoId, open, onOpenChange }: { videoId: string,
             
             const videoCount = isChecked ? (playlist.videoCount || 0) + 1 : Math.max(0, (playlist.videoCount || 0) - 1);
 
-            await updateDocumentNonBlocking(playlistRef, { videoIds, videoCount, updatedAt: serverTimestamp() });
+            await updateDoc(playlistRef, { videoIds, videoCount, updatedAt: serverTimestamp() });
         } catch (error) {
             // Revert on error
             setSelectedPlaylists(originalSelected);
@@ -235,7 +235,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     return query(collection(firestore, `users/${user.uid}/favorites`), where('videoId', '==', videoId), limit(1));
   }, [firestore, user, videoId]);
 
-  const { data: favorite, loading: favoriteLoading } = useCollection(favoriteQuery);
+  const { data: favorite, isLoading: favoriteLoading } = useCollection(favoriteQuery);
   const isFavoritedInitially = useMemo(() => favorite && favorite.length > 0, [favorite]);
   const [isFavoriting, setIsFavoriting] = useState(false);
   const [isFavorited, setIsFavorited] = useState(isFavoritedInitially);
@@ -247,7 +247,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     return collection(firestore, 'videos', videoId, 'likes');
     }, [firestore, videoId]);
 
-    const { data: likes, loading: likesLoading } = useCollection<VideoLike>(likesQuery);
+    const { data: likes, isLoading: likesLoading } = useCollection<VideoLike>(likesQuery);
 
     const userLikeQuery = useMemoFirebase(() => {
         if (!firestore || !user || !videoId) return null;
@@ -273,14 +273,14 @@ export default function WatchPage({ params }: { params: { id: string } }) {
       limit(10)
     );
   }, [firestore, video]);
-  const { data: recommendedVideos, loading: recommendedVideosLoading } = useCollection<Video>(recommendedVideosQuery);
+  const { data: recommendedVideos, isLoading: recommendedVideosLoading } = useCollection<Video>(recommendedVideosQuery);
 
 
   // Add to history
   useEffect(() => {
     if (user && firestore && video) {
       const historyRef = doc(firestore, `users/${user.uid}/video_history`, video.id);
-      setDocumentNonBlocking(historyRef, {
+      setDoc(historyRef, {
         videoId: video.id,
         watchDate: serverTimestamp(),
         title: video.title,
@@ -307,11 +307,11 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     
     try {
       if (isFavorited) {
-          await deleteDocumentNonBlocking(favoriteRef);
+          await deleteDoc(favoriteRef);
           toast({ title: 'Removed from favorites' });
           setIsFavorited(false);
       } else {
-          await setDocumentNonBlocking(favoriteRef, {
+          await setDoc(favoriteRef, {
               videoId: video.id,
               addedDate: serverTimestamp(),
           }, { merge: true });
@@ -335,9 +335,9 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     const likeRef = doc(firestore, `videos/${video.id}/likes/${user.uid}`);
     try {
         if (userLike && userLike.type === type) {
-            await deleteDocumentNonBlocking(likeRef);
+            await deleteDoc(likeRef);
         } else {
-            await setDocumentNonBlocking(likeRef, { type }, { merge: true });
+            await setDoc(likeRef, { type }, { merge: true });
         }
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not save reaction.' });

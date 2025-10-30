@@ -1,7 +1,6 @@
 {
   "entities": {
     "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
       "description": "Represents a user of the PlayNite application.",
@@ -56,7 +55,6 @@
       ]
     },
     "Video": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Video",
       "type": "object",
       "description": "Represents a video in the PlayNite application.",
@@ -122,7 +120,6 @@
       ]
     },
     "Category": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Category",
       "type": "object",
       "description": "Represents a category for videos in the PlayNite application.",
@@ -152,7 +149,6 @@
       ]
     },
     "Tag": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Tag",
       "type": "object",
       "description": "Represents a tag for videos in the PlayNite application.",
@@ -172,7 +168,6 @@
       ]
     },
     "Creator": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Creator",
       "type": "object",
       "description": "Represents a content creator (non-user uploads) in the PlayNite application.",
@@ -201,7 +196,6 @@
       ]
     },
     "VideoRating": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "VideoRating",
       "type": "object",
       "description": "Represents a rating given to a video by a user.",
@@ -232,7 +226,6 @@
       ]
     },
     "Favorite": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Favorite",
       "type": "object",
       "description": "Represents a video added to a user's favorites list.",
@@ -262,7 +255,6 @@
       ]
     },
     "VideoHistory": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "VideoHistory",
       "type": "object",
       "description": "Represents a user's video viewing history.",
@@ -298,7 +290,6 @@
       ]
     },
     "ReportedVideo": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ReportedVideo",
       "type": "object",
       "description": "Represents a video reported as inappropriate.",
@@ -333,7 +324,6 @@
       ]
     },
     "Playlist": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Playlist",
       "type": "object",
       "description": "Represents a custom video playlist created by a user.",
@@ -381,7 +371,6 @@
       ]
     },
     "PlaylistItem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "PlaylistItem",
       "type": "object",
       "description": "Represents a video within a playlist.",
@@ -417,7 +406,6 @@
       ]
     },
     "ContentPolicy": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ContentPolicy",
       "type": "object",
       "description": "Represents a content policy used for moderation.",
@@ -447,7 +435,6 @@
       ]
     },
     "ModerationLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ModerationLog",
       "type": "object",
       "description": "Represents a log entry for content moderation actions.",
@@ -487,7 +474,6 @@
       ]
     },
     "Comment": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Comment",
       "type": "object",
       "description": "Represents a comment on a video.",
@@ -523,7 +509,6 @@
       ]
     },
     "VideoLike": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "VideoLike",
         "type": "object",
         "description": "Represents a like or dislike on a video by a user.",
@@ -537,7 +522,6 @@
         "required": ["type"]
     },
     "Follower": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Follower",
       "type": "object",
       "description": "Represents a follower relationship between two users.",
@@ -563,7 +547,6 @@
       ]
     },
     "Notification": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Notification",
       "type": "object",
       "description": "Represents a notification for a user.",
@@ -605,7 +588,8 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com"
     ]
   },
   "firestore": {
