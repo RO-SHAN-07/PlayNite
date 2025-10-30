@@ -1,6 +1,6 @@
 'use client';
 import { VideoCard } from '@/components/video-card';
-import { History, Star, Upload, Loader2 } from 'lucide-react';
+import { History, Star, Upload, Loader2, Brain } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useFirestore } from '@/firebase';
 import { useMemoFirebase } from '@/hooks/use-memo-firebase';
@@ -9,6 +9,7 @@ import { useCollection } from '@/firebase/firestore/use-collection';
 import type { Video, Favorite, VideoHistory } from '@/lib/data';
 import { useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 function VideoRowSkeleton() {
@@ -54,21 +55,21 @@ export default function LibraryPage() {
     return query(collection(firestore, 'videos'), where('creatorId', '==', user.uid), limit(5));
   }, [user, firestore]);
 
-  const { data: favorites, isLoading: favoritesLoading } = useCollection<Favorite>(favoritesQuery);
-  const { data: history, isLoading: historyLoading } = useCollection<VideoHistory>(historyQuery);
-  const { data: uploads, isLoading: uploadsLoading } = useCollection<Video>(uploadsQuery);
+  const { data: favorites, loading: favoritesLoading } = useCollection<Favorite>(favoritesQuery);
+  const { data: history, loading: historyLoading } = useCollection<VideoHistory>(historyQuery);
+  const { data: uploads, loading: uploadsLoading } = useCollection<Video>(uploadsQuery);
 
   const favoriteVideoIds = useMemo(() => favorites?.map(f => f.videoId) || [], [favorites]);
   const historyVideoIds = useMemo(() => history?.map(h => h.videoId).filter((v, i, a) => a.indexOf(v) === i) || [], [history]);
 
-  const { data: favoriteVideos, isLoading: favoriteVideosLoading } = useCollection<Video>(
+  const { data: favoriteVideos, loading: favoriteVideosLoading } = useCollection<Video>(
     useMemoFirebase(() => {
       if (!firestore || favoriteVideoIds.length === 0) return null;
       return query(collection(firestore, 'videos'), where('__name__', 'in', favoriteVideoIds));
     }, [firestore, favoriteVideoIds])
   );
 
-  const { data: historyVideos, isLoading: historyVideosLoading } = useCollection<Video>(
+  const { data: historyVideos, loading: historyVideosLoading } = useCollection<Video>(
     useMemoFirebase(() => {
       if (!firestore || historyVideoIds.length === 0) return null;
       return query(collection(firestore, 'videos'), where('__name__', 'in', historyVideoIds));
@@ -151,6 +152,31 @@ export default function LibraryPage() {
               )}
             </div>
         )}
+      </section>
+
+      <section>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold font-headline flex items-center gap-2">
+            <Brain className="text-primary" />
+            Memory Bank
+          </h2>
+          <Link href="/library/memory-bank" className="text-sm text-primary hover:underline">
+            Open Memory Bank
+          </Link>
+        </div>
+        <div className="p-8 text-center bg-muted/20 rounded-lg">
+          <Brain className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Your Professional Memory Repository</h3>
+          <p className="text-muted-foreground mb-4">
+            Capture insights, notes, learnings, and important information from videos you watch.
+          </p>
+          <Link href="/library/memory-bank">
+            <Button>
+              <Brain className="w-4 h-4 mr-2" />
+              Open Memory Bank
+            </Button>
+          </Link>
+        </div>
       </section>
     </div>
   );
