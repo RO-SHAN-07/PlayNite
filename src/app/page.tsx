@@ -1,4 +1,3 @@
-
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -76,8 +75,8 @@ export default function Home() {
     return query(collection(firestore, 'videos'), orderBy('uploadedAt', 'desc'), limit(10));
   }, [firestore]);
 
-  const { data: trendingVideos, loading: trendingLoading } = useCollection<Video>(trendingVideosQuery);
-  const { data: newReleases, loading: newReleasesLoading } = useCollection<Video>(newReleasesQuery);
+  const { data: trendingVideos, isLoading: trendingLoading } = useCollection<Video>(trendingVideosQuery);
+  const { data: newReleases, isLoading: newReleasesLoading } = useCollection<Video>(newReleasesQuery);
   
   const featuredVideo = trendingVideos?.[0];
 
@@ -108,45 +107,79 @@ export default function Home() {
     <div className="space-y-16">
       {/* Hero Section */}
       <section className="relative h-[60vh] w-full flex items-center justify-center">
-        {trendingLoading || !featuredVideo ? (
+        {trendingLoading ? (
           <Skeleton className="w-full h-full rounded-3xl" />
         ) : (
           <>
-            {featuredVideo.thumbnailUrl && (
-              <Image
-                src={featuredVideo.thumbnailUrl}
+            <Image
+                src={featuredVideo?.thumbnailUrl || "https://picsum.photos/seed/hero-bg/1920/1080"}
                 alt="Featured video background"
                 fill
                 className="object-cover rounded-3xl"
                 data-ai-hint="abstract cinematic"
                 priority
               />
-            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent rounded-3xl" />
-            <div className="absolute bottom-8 left-8 right-8">
-               <Card className="bg-background/60 backdrop-blur-xl border-white/10 p-6 rounded-2xl w-full max-w-2xl">
-                 <h1 className="text-3xl md:text-4xl font-bold font-headline mb-3 line-clamp-2">{featuredVideo.title}</h1>
-                 <p className="max-w-xl text-md text-foreground/80 mb-5 line-clamp-2">{featuredVideo.description}</p>
-                 <div className="flex flex-col sm:flex-row gap-4">
-                    <Button size="lg" className="bg-primary hover:bg-primary/90" asChild>
-                      <Link href={`/watch/${featuredVideo.id}`}>
-                        <PlayCircle className="mr-2" />
-                        Play Now
-                      </Link>
-                    </Button>
-                    <Button 
-                        size="lg" 
-                        variant="secondary" 
-                        className="bg-white/10 text-white border-white/20 hover:bg-white/20"
-                        onClick={handleAddToWatchLater}
-                        disabled={isAdding}
-                    >
-                      {isAdding ? <Loader2 className="mr-2 animate-spin"/> : <Plus className="mr-2" />}
-                      Add to List
-                    </Button>
+            
+            {user ? (
+                 <div className="absolute bottom-8 left-8 right-8">
+                   <Card className="bg-background/60 backdrop-blur-xl border-white/10 p-6 rounded-2xl w-full max-w-2xl">
+                     <h1 className="text-3xl md:text-4xl font-bold font-headline mb-3 line-clamp-2">{featuredVideo?.title}</h1>
+                     <p className="max-w-xl text-md text-foreground/80 mb-5 line-clamp-2">{featuredVideo?.description}</p>
+                     <div className="flex flex-col sm:flex-row gap-4">
+                        <Button size="lg" className="bg-primary hover:bg-primary/90" asChild>
+                          <Link href={`/watch/${featuredVideo?.id}`}>
+                            <PlayCircle className="mr-2" />
+                            Play Now
+                          </Link>
+                        </Button>
+                        <Button 
+                            size="lg" 
+                            variant="secondary" 
+                            className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+                            onClick={handleAddToWatchLater}
+                            disabled={isAdding}
+                        >
+                          {isAdding ? <Loader2 className="mr-2 animate-spin"/> : <Plus className="mr-2" />}
+                          Add to List
+                        </Button>
+                     </div>
+                   </Card>
+                </div>
+            ) : (
+                 <div className="relative text-center text-white px-4">
+                     <div className="flex items-center justify-center gap-3 mb-4">
+                        <div className="bg-primary p-3 rounded-2xl">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="32"
+                                height="32"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-primary-foreground"
+                            >
+                                <path d="M7 4v16l13-8L7 4z"></path>
+                            </svg>
+                        </div>
+                        <h1 className="text-6xl font-bold font-headline drop-shadow-lg">PlayNite</h1>
+                    </div>
+                    <p className="text-xl text-white/90 drop-shadow-md mb-8">
+                        Your next-generation video streaming experience.
+                    </p>
+                    <div className="flex justify-center gap-4">
+                        <Button size="lg" asChild>
+                            <Link href="/auth/register">Get Started</Link>
+                        </Button>
+                        <Button size="lg" variant="secondary" asChild>
+                            <Link href="/auth/login">Sign In</Link>
+                        </Button>
+                    </div>
                  </div>
-               </Card>
-            </div>
+            )}
           </>
         )}
       </section>
@@ -198,3 +231,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
