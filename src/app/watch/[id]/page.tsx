@@ -3,13 +3,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
-import { type Video, UserProfile, Comment, VideoLike } from '@/lib/data';
+import { type Video, UserProfile, Comment, VideoLike, Playlist } from '@/lib/data';
 import { formatDistanceToNow } from 'date-fns';
-import { Star, ThumbsUp, ThumbsDown, Share2, Loader2, Send } from 'lucide-react';
+import { Star, ThumbsUp, ThumbsDown, Share2, Loader2, Send, ListPlus } from 'lucide-react';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
-import { useFirestore, useUser, setDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useUser, setDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { collection, doc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, query, where, limit, orderBy, arrayUnion } from 'firebase/firestore';
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,6 +19,9 @@ import { VideoEmbed } from '@/components/video-embed';
 import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 function CommentItem({ comment }: { comment: Comment }) {
     const firestore = useFirestore();
@@ -126,6 +129,87 @@ function CommentsSection({ videoId }: { videoId: string }) {
     );
 }
 
+function AddToPlaylistDialog({ videoId, open, onOpenChange }: { videoId: string, open: boolean, onOpenChange: (open: boolean) => void }) {
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+    const router = useRouter();
+
+    const playlistsQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return query(collection(firestore, `users/${user.uid}/playlists`), orderBy('createdAt', 'desc'));
+    }, [user, firestore]);
+
+    const { data: playlists, isLoading } = useCollection<Playlist>(playlistsQuery);
+    
+    const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([]);
+    
+    useEffect(() => {
+        if(playlists && videoId){
+            const initialSelected = playlists.filter(p => p.videoIds.includes(videoId)).map(p => p.id);
+            setSelectedPlaylists(initialSelected);
+        }
+    }, [playlists, videoId])
+
+
+    const handlePlaylistToggle = async (playlistId: string, isChecked: boolean) => {
+        if (!user || !firestore) return;
+        const playlistRef = doc(firestore, `users/${user.uid}/playlists`, playlistId);
+        
+        // Optimistic update
+        const originalSelected = [...selectedPlaylists];
+        setSelectedPlaylists(current => isChecked ? [...current, playlistId] : current.filter(id => id !== playlistId));
+
+        try {
+            const playlist = playlists?.find(p => p.id === playlistId);
+            if (!playlist) return;
+
+            const videoIds = isChecked 
+                ? arrayUnion(videoId) 
+                : arrayRemove(videoId);
+            
+            const videoCount = isChecked ? (playlist.videoCount || 0) + 1 : Math.max(0, (playlist.videoCount || 0) - 1);
+
+            await updateDocumentNonBlocking(playlistRef, { videoIds, videoCount, updatedAt: serverTimestamp() });
+        } catch (error) {
+            // Revert on error
+            setSelectedPlaylists(originalSelected);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not update playlist.' });
+        }
+    }
+
+    if (isLoading || isUserLoading) {
+        return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent><Loader2 className="w-8 h-8 animate-spin mx-auto my-8"/></DialogContent></Dialog>;
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Add to playlist</DialogTitle>
+                    <DialogDescription>Select the playlists you want to add this video to.</DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-3 max-h-80 overflow-y-auto">
+                    {playlists && playlists.length > 0 ? playlists.map(playlist => (
+                        <div key={playlist.id} className="flex items-center space-x-3">
+                            <Checkbox 
+                                id={playlist.id} 
+                                checked={selectedPlaylists.includes(playlist.id)}
+                                onCheckedChange={(checked) => handlePlaylistToggle(playlist.id, !!checked)}
+                            />
+                            <Label htmlFor={playlist.id} className="flex-1 cursor-pointer">{playlist.name} ({playlist.videoCount || 0})</Label>
+                        </div>
+                    )) : (
+                        <div className="text-center text-muted-foreground py-8">
+                            <p>You don't have any playlists.</p>
+                             <Button variant="link" asChild><Link href="/library/playlists">Create one?</Link></Button>
+                        </div>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export default function WatchPage({ params }: { params: { id: string } }) {
   const { id: videoId } = params;
   const firestore = useFirestore();
@@ -154,8 +238,9 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   const { data: favorite, loading: favoriteLoading } = useCollection(favoriteQuery);
   const isFavoritedInitially = useMemo(() => favorite && favorite.length > 0, [favorite]);
   const [isFavoriting, setIsFavoriting] = useState(false);
-
   const [isFavorited, setIsFavorited] = useState(isFavoritedInitially);
+  
+  const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
 
   const likesQuery = useMemoFirebase(() => {
     if (!firestore || !videoId) return null;
@@ -266,6 +351,15 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     toast({ title: 'Link Copied!', description: 'Video link copied to your clipboard.' });
   }
 
+    const handleAddToPlaylist = () => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Please log in', description: 'You need to be logged in to manage playlists.' });
+            router.push('/auth/login');
+            return;
+        }
+        setShowAddToPlaylist(true);
+    }
+
 
   if (videoLoading) {
     return <div className="grid lg:grid-cols-3 gap-8">
@@ -359,6 +453,9 @@ export default function WatchPage({ params }: { params: { id: string } }) {
                <Button variant="ghost" onClick={handleShare}>
                 <Share2 className="mr-2" /> Share
               </Button>
+               <Button variant="ghost" onClick={handleAddToPlaylist}>
+                 <ListPlus className="mr-2" /> Add to Playlist
+               </Button>
                <Button variant="ghost" className={isFavorited ? "text-amber-400 hover:text-amber-500" : ""} onClick={handleFavorite} disabled={isFavoriting || favoriteLoading}>
                 {isFavoriting || favoriteLoading ? <Loader2 className="animate-spin mr-2"/> : <Star className="mr-2" />}
                 {isFavorited ? 'Favorited' : 'Favorite'}
@@ -386,6 +483,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
         </div>
       </div>
     </div>
+    <AddToPlaylistDialog videoId={videoId} open={showAddToPlaylist} onOpenChange={setShowAddToPlaylist} />
     </>
   );
 }

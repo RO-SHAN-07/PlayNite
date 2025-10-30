@@ -140,6 +140,26 @@ export interface VideoHistory {
   thumbnailUrl: string;
 }
 
+export interface Playlist {
+    id: string;
+    userId: string;
+    name: string;
+    description?: string;
+    videoIds: string[];
+    videoCount: number;
+    createdAt: Timestamp | FieldValue;
+    updatedAt: Timestamp | FieldValue;
+}
+
+export interface PlaylistItem {
+    id: string;
+    playlistId: string;
+    videoId: string;
+    addedDate: Timestamp | FieldValue;
+    order: number;
+}
+
+
 export interface Category {
   id: string;
   name: string;

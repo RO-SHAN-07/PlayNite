@@ -12,6 +12,7 @@ import {
   LogIn,
   Video,
   Info,
+  ListVideo,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -64,6 +65,11 @@ const SIDEBAR_SECTIONS = [
         href: '/library/favorites',
         label: 'Favorites',
         icon: Star,
+      },
+       {
+        href: '/library/playlists',
+        label: 'Playlists',
+        icon: ListVideo,
       },
       {
         href: '/library/memory-bank',

@@ -1,6 +1,6 @@
 'use client';
 import { VideoCard } from '@/components/video-card';
-import { History, Star, Upload, Loader2, Brain } from 'lucide-react';
+import { History, Star, Upload, Loader2, Brain, ListVideo } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useFirestore } from '@/firebase';
 import { useMemoFirebase } from '@/hooks/use-memo-firebase';
@@ -133,6 +133,31 @@ export default function LibraryPage() {
         )}
       </section>
       
+       <section>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold font-headline flex items-center gap-2">
+            <ListVideo className="text-primary" />
+            Playlists
+          </h2>
+          <Link href="/library/playlists" className="text-sm text-primary hover:underline">
+            See all
+          </Link>
+        </div>
+        <div className="p-8 text-center bg-muted/20 rounded-lg">
+          <ListVideo className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Curate Your Content</h3>
+          <p className="text-muted-foreground mb-4">
+            Organize videos into custom playlists for any occasion.
+          </p>
+          <Link href="/library/playlists">
+            <Button>
+              <ListVideo className="w-4 h-4 mr-2" />
+              Go to Playlists
+            </Button>
+          </Link>
+        </div>
+      </section>
+
       <section>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold font-headline flex items-center gap-2">

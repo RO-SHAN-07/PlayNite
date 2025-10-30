@@ -358,13 +358,26 @@
           "type": "string",
           "description": "Date and time the playlist was created.",
           "format": "date-time"
+        },
+        "videoIds": {
+            "type": "array",
+            "description": "Ordered list of video IDs in the playlist.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "videoCount": {
+            "type": "number",
+            "description": "Total number of videos in the playlist."
         }
       },
       "required": [
         "id",
         "userId",
         "name",
-        "creationDate"
+        "creationDate",
+        "videoIds",
+        "videoCount"
       ]
     },
     "PlaylistItem": {
@@ -596,316 +609,107 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles. Accessible only to the user and admins.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
       },
-      {
-        "path": "/users/{userId}/favorites/{favoriteId}",
-        "definition": {
-          "entityName": "Favorite",
-          "schema": {
-            "$ref": "#/backend/entities/Favorite"
-          },
-          "description": "Stores videos in a user's favorites list. Accessible only to the user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "favoriteId",
-              "description": "The unique identifier of the favorite item."
-            }
-          ]
-        }
+      "description": "Stores user profiles. Accessible only to the user and admins."
+    },
+    "/users/{userId}/favorites/{favoriteId}": {
+      "schema": {
+        "$ref": "#/entities/Favorite"
       },
-      {
-        "path": "/users/{userId}/video_history/{videoHistoryId}",
-        "definition": {
-          "entityName": "VideoHistory",
-          "schema": {
-            "$ref": "#/backend/entities/VideoHistory"
-          },
-          "description": "Stores a user's video viewing history. Accessible only to the user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "videoHistoryId",
-              "description": "The unique identifier of a video history item."
-            }
-          ]
-        }
+      "description": "Stores videos in a user's favorites list. Accessible only to the user."
+    },
+    "/users/{userId}/video_history/{videoHistoryId}": {
+      "schema": {
+        "$ref": "#/entities/VideoHistory"
       },
-      {
-        "path": "/users/{userId}/playlists/{playlistId}",
-        "definition": {
-          "entityName": "Playlist",
-          "schema": {
-            "$ref": "#/backend/entities/Playlist"
-          },
-          "description": "Stores playlists created by a user. Accessible only to the user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "playlistId",
-              "description": "The unique identifier of the playlist."
-            }
-          ]
-        }
+      "description": "Stores a user's video viewing history. Accessible only to the user."
+    },
+    "/users/{userId}/playlists/{playlistId}": {
+      "schema": {
+        "$ref": "#/entities/Playlist"
       },
-      {
-        "path": "/users/{userId}/playlists/{playlistId}/playlist_items/{playlistItemId}",
-        "definition": {
-          "entityName": "PlaylistItem",
-          "schema": {
-            "$ref": "#/backend/entities/PlaylistItem"
-          },
-          "description": "Stores items within a user's playlist. Accessible only to the user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "playlistId",
-              "description": "The unique identifier of the playlist."
-            },
-            {
-              "name": "playlistItemId",
-              "description": "The unique identifier of the playlist item."
-            }
-          ]
-        }
+      "description": "Stores playlists created by a user. Accessible only to the user."
+    },
+    "/users/{userId}/playlists/{playlistId}/playlist_items/{playlistItemId}": {
+      "schema": {
+        "$ref": "#/entities/PlaylistItem"
       },
-      {
-        "path": "/users/{creatorId}/followers/{followerId}",
-        "definition": {
-          "entityName": "Follower",
-          "schema": {
-            "$ref": "#/backend/entities/Follower"
-          },
-          "description": "Stores the followers of a creator. Writeable by any authenticated user, readable by all.",
-          "params": [
-            {
-              "name": "creatorId",
-              "description": "The user ID of the creator being followed."
-            },
-            {
-              "name": "followerId",
-              "description": "The user ID of the user who is following."
-            }
-          ]
-        }
+      "description": "Stores items within a user's playlist. Accessible only to the user."
+    },
+    "/users/{creatorId}/followers/{followerId}": {
+      "schema": {
+        "$ref": "#/entities/Follower"
       },
-      {
-        "path": "/users/{userId}/notifications/{notificationId}",
-        "definition": {
-          "entityName": "Notification",
-          "schema": {
-            "$ref": "#/backend/entities/Notification"
-          },
-          "description": "Stores notifications for a user. Accessible only by the owning user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "notificationId",
-              "description": "The unique identifier of the notification."
-            }
-          ]
-        }
+      "description": "Stores the followers of a creator. Writeable by any authenticated user, readable by all."
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": {
+        "$ref": "#/entities/Notification"
       },
-      {
-        "path": "/videos/{videoId}",
-        "definition": {
-          "entityName": "Video",
-          "schema": {
-            "$ref": "#/backend/entities/Video"
-          },
-          "description": "Stores video metadata. Publicly readable, but restricted write access.",
-          "params": [
-            {
-              "name": "videoId",
-              "description": "The unique identifier of the video."
-            }
-          ]
-        }
+      "description": "Stores notifications for a user. Accessible only by the owning user."
+    },
+    "/videos/{videoId}": {
+      "schema": {
+        "$ref": "#/entities/Video"
       },
-      {
-        "path": "/videos/{videoId}/comments/{commentId}",
-        "definition": {
-          "entityName": "Comment",
-          "schema": {
-            "$ref": "#/backend/entities/Comment"
-          },
-          "description": "Stores comments for a video. Publicly readable, writeable by authenticated users.",
-          "params": [
-            {
-              "name": "videoId",
-              "description": "The ID of the video."
-            },
-            {
-              "name": "commentId",
-              "description": "The ID of the comment."
-            }
-          ]
-        }
+      "description": "Stores video metadata. Publicly readable, but restricted write access."
+    },
+    "/videos/{videoId}/comments/{commentId}": {
+      "schema": {
+        "$ref": "#/entities/Comment"
       },
-      {
-        "path": "/videos/{videoId}/likes/{userId}",
-        "definition": {
-          "entityName": "VideoLike",
-          "schema": {
-            "$ref": "#/backend/entities/VideoLike"
-          },
-          "description": "Stores likes/dislikes for a video. Publicly readable, writeable only by the owning user.",
-          "params": [
-            {
-              "name": "videoId",
-              "description": "The ID of the video."
-            },
-            {
-              "name": "userId",
-              "description": "The ID of the user who liked/disliked the video."
-            }
-          ]
-        }
+      "description": "Stores comments for a video. Publicly readable, writeable by authenticated users."
+    },
+    "/videos/{videoId}/likes/{userId}": {
+      "schema": {
+        "$ref": "#/entities/VideoLike"
       },
-      {
-        "path": "/categories/{categoryId}",
-        "definition": {
-          "entityName": "Category",
-          "schema": {
-            "$ref": "#/backend/entities/Category"
-          },
-          "description": "Stores video categories. Publicly readable, but restricted write access.",
-          "params": [
-            {
-              "name": "categoryId",
-              "description": "The unique identifier of the category."
-            }
-          ]
-        }
+      "description": "Stores likes/dislikes for a video. Publicly readable, writeable only by the owning user."
+    },
+    "/categories/{categoryId}": {
+      "schema": {
+        "$ref": "#/entities/Category"
       },
-      {
-        "path": "/tags/{tagId}",
-        "definition": {
-          "entityName": "Tag",
-          "schema": {
-            "$ref": "#/backend/entities/Tag"
-          },
-          "description": "Stores video tags. Publicly readable, but restricted write access.",
-          "params": [
-            {
-              "name": "tagId",
-              "description": "The unique identifier of the tag."
-            }
-          ]
-        }
+      "description": "Stores video categories. Publicly readable, but restricted write access."
+    },
+    "/tags/{tagId}": {
+      "schema": {
+        "$ref": "#/entities/Tag"
       },
-      {
-        "path": "/creators/{creatorId}",
-        "definition": {
-          "entityName": "Creator",
-          "schema": {
-            "$ref": "#/backend/entities/Creator"
-          },
-          "description": "Stores content creator information. Publicly readable, but restricted write access.",
-          "params": [
-            {
-              "name": "creatorId",
-              "description": "The unique identifier of the creator."
-            }
-          ]
-        }
+      "description": "Stores video tags. Publicly readable, but restricted write access."
+    },
+    "/creators/{creatorId}": {
+      "schema": {
+        "$ref": "#/entities/Creator"
       },
-      {
-        "path": "/video_ratings/{videoRatingId}",
-        "definition": {
-          "entityName": "VideoRating",
-          "schema": {
-            "$ref": "#/backend/entities/VideoRating"
-          },
-          "description": "Stores ratings given to videos by users. Publicly readable, but restricted write access.",
-          "params": [
-            {
-              "name": "videoRatingId",
-              "description": "The unique identifier of the video rating."
-            }
-          ]
-        }
+      "description": "Stores content creator information. Publicly readable, but restricted write access."
+    },
+    "/video_ratings/{videoRatingId}": {
+      "schema": {
+        "$ref": "#/entities/VideoRating"
       },
-      {
-        "path": "/reported_videos/{reportedVideoId}",
-        "definition": {
-          "entityName": "ReportedVideo",
-          "schema": {
-            "$ref": "#/backend/entities/ReportedVideo"
-          },
-          "description": "Stores reports of inappropriate videos. Restricted access.",
-          "params": [
-            {
-              "name": "reportedVideoId",
-              "description": "The unique identifier of the reported video."
-            }
-          ]
-        }
+      "description": "Stores ratings given to videos by users. Publicly readable, but restricted write access."
+    },
+    "/reported_videos/{reportedVideoId}": {
+      "schema": {
+        "$ref": "#/entities/ReportedVideo"
       },
-      {
-        "path": "/content_policies/{contentPolicyId}",
-        "definition": {
-          "entityName": "ContentPolicy",
-          "schema": {
-            "$ref": "#/backend/entities/ContentPolicy"
-          },
-          "description": "Stores content policies for moderation. Restricted access to admins.",
-          "params": [
-            {
-              "name": "contentPolicyId",
-              "description": "The unique identifier of the content policy."
-            }
-          ]
-        }
+      "description": "Stores reports of inappropriate videos. Restricted access."
+    },
+    "/content_policies/{contentPolicyId}": {
+      "schema": {
+        "$ref": "#/entities/ContentPolicy"
       },
-      {
-        "path": "/moderation_logs/{moderationLogId}",
-        "definition": {
-          "entityName": "ModerationLog",
-          "schema": {
-            "$ref": "#/backend/entities/ModerationLog"
-          },
-          "description": "Stores logs of content moderation actions. Restricted access to admins.",
-          "params": [
-            {
-              "name": "moderationLogId",
-              "description": "The unique identifier of the moderation log entry."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore data structure is designed to prioritize authorization independence, clarity, and scalability. It utilizes denormalization of authorization data, structural segregation for homogeneous security postures, and consistent access modeling to ensure simple and robust security rules. The structure avoids hierarchical authorization dependencies to allow atomic operations (transactions/batches) and simplifies debugging.\n\nAuthorization Independence (CRITICAL): All user-owned data is stored under the `/users/{userId}` path. For collaborative entities, a membership map is denormalized into each document to avoid `get()` calls in security rules.\n\nStructural Segregation (Homogeneous Security Posture): Data with different access needs are stored in separate collections (e.g., public videos, user-owned playlists, admin-managed content policies).\n\nAccess Modeling (Standardization and Consistency): User-owned data follows the `/users/{userId}/{entityName}/{entityId}` pattern. Collaborative data uses membership maps. Global roles are managed via dedicated collections.\n\nQAPs (Rules are not Filters): The structure supports secure `list` operations by segregating data based on access control requirements and utilizing membership maps for collaborative entities.\n\nInvariants: Ownership is enforced via path-based rules and denormalized data. Timestamps and denormalized data integrity are enforced within security rules."
+      "description": "Stores content policies for moderation. Restricted access to admins."
+    },
+    "/moderation_logs/{moderationLogId}": {
+      "schema": {
+        "$ref": "#/entities/ModerationLog"
+      },
+      "description": "Stores logs of content moderation actions. Restricted access to admins."
+    }
   }
 }
