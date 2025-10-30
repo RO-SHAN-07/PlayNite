@@ -11,9 +11,8 @@ import {
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { categories, type Video } from '@/lib/data';
-import { embeddedVideoKeys } from '@/lib/embedded-videos';
-import { VideoCard } from '@/components/video-card';
 import { EmbeddedVideo } from '@/components/embedded-video';
+import { embeddedVideoKeys } from '@/lib/embedded-videos';
 import { PlayCircle, Plus, Loader2 } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, limit, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
@@ -195,7 +194,7 @@ export default function Home() {
             <EmbeddedVideo key={viewkey} viewkey={viewkey} />
           ))}
           {newReleasesLoading ? (
-            <VideoRowSkeleton count={5 - embeddedVideoKeys.length} />
+            <VideoRowSkeleton count={5} />
           ) : newReleases && newReleases.length > 0 ? (
             newReleases.map((video) => (
               <VideoCard key={video.id} video={video} />
