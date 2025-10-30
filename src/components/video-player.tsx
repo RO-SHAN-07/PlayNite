@@ -139,7 +139,7 @@ export const VideoPlayer = forwardRef(({ src, poster, startTime }: VideoPlayerPr
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isPlaying, startTime]);
+  }, [startTime]);
 
   useEffect(() => {
     if (videoRef.current) {
