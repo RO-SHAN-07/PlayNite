@@ -37,6 +37,92 @@ export interface UserProfile {
   watchLater?: string[];
 }
 
+export interface MemoryBankEntry {
+  id: string;
+  userId: string;
+  title: string;
+  content: string;
+  type: 'note' | 'insight' | 'learning' | 'reference' | 'quote' | 'idea';
+  tags: string[];
+  category?: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  createdAt: Timestamp | FieldValue;
+  updatedAt: Timestamp | FieldValue;
+  videoId?: string; // Optional link to related video
+  memoryBankId?: string; // Reference to parent memory bank if any
+  isArchived: boolean;
+  isPrivate: boolean;
+  attachments?: MemoryAttachment[];
+  metadata?: MemoryMetadata;
+}
+
+export interface MemoryAttachment {
+  id: string;
+  name: string;
+  type: 'image' | 'file' | 'link' | 'video';
+  url: string;
+  size?: number;
+  mimeType?: string;
+}
+
+export interface MemoryMetadata {
+  color?: string;
+  icon?: string;
+  rating?: number; // 1-5 stars
+  wordCount?: number;
+  readingTime?: number; // in minutes
+  source?: string; // where this memory came from
+}
+
+export interface MemoryBank {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  type: 'personal' | 'professional' | 'learning' | 'creative' | 'project';
+  color: string;
+  icon: string;
+  isDefault: boolean;
+  isPrivate: boolean;
+  createdAt: Timestamp | FieldValue;
+  updatedAt: Timestamp | FieldValue;
+  settings: MemoryBankSettings;
+}
+
+export interface MemoryBankSettings {
+  allowTagging: boolean;
+  allowAttachments: boolean;
+  autoTagging: boolean;
+  enableSearch: boolean;
+  enableExport: boolean;
+  retentionPeriod?: number; // in days, null for unlimited
+}
+
+export interface MemorySearchFilters {
+  query?: string;
+  type?: MemoryBankEntry['type'][];
+  tags?: string[];
+  category?: string;
+  priority?: MemoryBankEntry['priority'][];
+  dateRange?: {
+    start: Timestamp;
+    end: Timestamp;
+  };
+  hasVideo?: boolean;
+  memoryBankId?: string;
+  showArchived?: boolean;
+  limit?: number;
+}
+
+export interface MemoryBankStats {
+  totalEntries: number;
+  entriesByType: Record<MemoryBankEntry['type'], number>;
+  entriesByPriority: Record<MemoryBankEntry['priority'], number>;
+  totalTags: number;
+  mostUsedTags: Array<{ tag: string; count: number }>;
+  recentActivity: Timestamp;
+}
+
 export interface Favorite {
   videoId: string;
   addedDate: Timestamp | FieldValue;

@@ -7,6 +7,11 @@ This is a web application for PlayNite, a next-generation video streaming platfo
 - **Dynamic Content:** Browse trending videos, new releases, and content by category.
 - **User Authentication:** Secure user registration and login with Firebase Authentication (Email/Password & Google).
 - **Personalized Library:** Users can manage their own library, including watch history and favorited videos.
+- **Memory Bank System:** Advanced personal content management system allowing users to:
+  - Store and organize important video content
+  - Create categorized memory entries with detailed metadata
+  - Search and filter through personal memory bank
+  - Sync memory bank across all devices
 - **Creator Studio:** Users can upload and manage their own video content.
 - **AI-Powered Features:**
   - AI-generated video tags and summaries to enhance content discovery.
