@@ -394,13 +394,6 @@ export default function WatchPage({ params }: { params: { id: string } }) {
                     videoId={video.id}
                     videoUrl={video.embedUrl || video.videoUrl}
                     title={video.title}
-                    duration={video.duration}
-                    views={video.views}
-                    thumbnailUrl={video.thumbnailUrl}
-                    autoplay={true}
-                    showControls={true}
-                    showMetadata={true}
-                    aspectRatio="16:9"
                 />
             ) : (
                 <div className="w-full h-full flex items-center justify-center">

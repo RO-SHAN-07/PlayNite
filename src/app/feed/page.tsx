@@ -5,7 +5,7 @@ import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { Rss, Loader2, UserPlus } from 'lucide-react';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect } from 'react';
 import type { Video, Follower } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -25,16 +25,15 @@ export default function FeedPage() {
 
   const followingQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    // Correctly query the subcollection on the CURRENT user's document
-    return query(collection(firestore, `users/${user.uid}/followers`));
+    // Query the 'followers' subcollection of OTHER users to see if the current user's ID is in there.
+    return query(collectionGroup(firestore, 'followers'), where('followerId', '==', user.uid));
   }, [user, firestore]);
-
+  
   const { data: following, isLoading: followingLoading } = useCollection<Follower>(followingQuery);
-
+  
   const followedCreatorIds = useMemo(() => {
     if (!following) return [];
-    // The documents in this collection represent who the current user is following.
-    // The ID of each document IS the creatorId they are following.
+    // The 'followedId' is the ID of the creator channel being followed.
     return following.map(f => f.followedId);
   }, [following]);
 

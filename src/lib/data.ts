@@ -16,7 +16,6 @@ export interface Video {
   isEmbedded?: boolean;
   embedUrl?: string;
   embedProvider?: 'youtube' | 'vimeo' | 'adult' | 'generic';
-  videoKey?: string;
 }
 
 export interface UserPreferences {

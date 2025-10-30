@@ -11,7 +11,7 @@ import {
 const sampleVideoUrl = 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
 // Embedded video URL for adult content
-const embeddedVideoUrl = 'https://www.pornhub.com/embed/0ef399b63a72d0e4ab57';
+const embeddedVideoUrl = 'https://www.pornhub.com/embed/ph638b6d0a90464';
 
 const videosToSeed = [
     {
@@ -214,13 +214,12 @@ const videosToSeed = [
       creatorId: 'dev-user',
       duration: '25:33',
       thumbnailUrl: 'https://picsum.photos/seed/premium-1/400/225',
-      videoUrl: embeddedVideoUrl,
+      videoUrl: '', // No direct video URL for embeds
       views: 523456,
       categoryId: 'action',
       isEmbedded: true,
       embedUrl: embeddedVideoUrl,
-      embedProvider: 'adult',
-      videoKey: '0ef399b63a72d0e4ab57'
+      embedProvider: 'adult'
     },
     {
       id: 'sci-fi-3',
