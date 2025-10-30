@@ -1,4 +1,10 @@
-export function EmbeddedVideo({ viewkey }: { viewkey: string }) {
+'use client';
+
+type EmbeddedVideoProps = {
+  viewkey: string;
+};
+
+export function EmbeddedVideo({ viewkey }: EmbeddedVideoProps) {
   return (
     <div className="aspect-video w-full rounded-lg overflow-hidden">
       <iframe
